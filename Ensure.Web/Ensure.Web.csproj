@@ -28,4 +28,8 @@
     <ProjectReference Include="..\Ensure.Domain\Ensure.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\apk\" />
+  </ItemGroup>
+
 </Project>
