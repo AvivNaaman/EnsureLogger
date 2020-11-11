@@ -17,8 +17,15 @@
             android:indeterminateOnly="false"
             android:layout_marginTop="-6dp"
             android:paddingTop="0dp"
-            tools:ignore="HardcodedSize" 
+            tools:ignore="HardcodedSize"
             android:id="@+id/MainActivityTopProgress"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="Hello, $UserName$" 
+            android:layout_marginHorizontal="12sp"
+            android:id="@+id/HelloUserTv"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0sp"

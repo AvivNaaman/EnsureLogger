@@ -46,5 +46,10 @@ namespace Ensure.AndroidApp
 				_sharedPreferences.Edit().PutString(UserInfoSharedPreference, json).Commit();
 			}
 		}
+		public void LogUserOut()
+		{
+			UserInfo = null;
+			_sharedPreferences.Edit().PutString(UserInfoSharedPreference, String.Empty).Commit();
+		}
 	}
 }

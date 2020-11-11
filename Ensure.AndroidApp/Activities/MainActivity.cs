@@ -17,10 +17,11 @@ using Android.Support.V7.Widget;
 using Ensure.AndroidApp.Helpers;
 using Ensure.AndroidApp.Adapters;
 using Android.Support.V7.Widget.Helper;
+using Android.Views;
 
 namespace Ensure.AndroidApp
 {
-	[Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+	[Activity(Label = "@string/app_name", MainLauncher = true)]
 	public class MainActivity : AppCompatActivity
 	{
 		private List<EnsureLog> ensures = new List<EnsureLog>();
@@ -33,14 +34,29 @@ namespace Ensure.AndroidApp
 		private Button addBtn;
 		private RecyclerView logsRv;
 		private SwipeRefreshLayout refreshLayout;
+
+		private TextView helloUserTv;
 		protected override async void OnCreate(Bundle savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
 			Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
+			// Move to login activity if hsn't logged in yet
+			var app = (EnsureApplication)ApplicationContext;
+			if (!app.IsLoggedIn)
+			{
+				StartLoginActivity();
+			}
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.activity_main);
+
+			// Hello, UserName message
+			helloUserTv = FindViewById<TextView>(Resource.Id.HelloUserTv);
+			if (app.IsLoggedIn)
+			{
+				helloUserTv.Text = $"Hello, {app.UserInfo.UserName}";
+			}
 
 			// Taste picker
 			tasteSpinner = FindViewById<Spinner>(Resource.Id.EnsureTasteSpinner);
@@ -68,14 +84,7 @@ namespace Ensure.AndroidApp
 			ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
 			itemTouchHelper.AttachToRecyclerView(logsRv);
 
-			// Move to login activity if hsn't logged in yet
-			var app = (EnsureApplication)ApplicationContext;
-
-			if (!app.IsLoggedIn)
-			{
-				StartLoginActivity();
-			}
-			else
+			if (app.IsLoggedIn)
 			{
 				await RefreshEnsuresList();
 			}
@@ -143,9 +152,11 @@ namespace Ensure.AndroidApp
 		{
 			base.OnActivityResult(requestCode, resultCode, data);
 			ActivityRequestCodes code = (ActivityRequestCodes)requestCode;
+			var app = (EnsureApplication)ApplicationContext;
 			switch (code)
 			{
 				case ActivityRequestCodes.Login: // login
+					helloUserTv.Text = $"Hello, {app.UserInfo.UserName}";
 					await RefreshEnsuresList();
 					break;
 				default:
@@ -210,6 +221,24 @@ namespace Ensure.AndroidApp
 			logsRvTouchHelper.EnableSwipe = !isLoading;
 		}
 
+		public override bool OnCreateOptionsMenu(IMenu menu)
+		{
+			MenuInflater.Inflate(Resource.Menu.main_menu, menu);
+
+			return base.OnCreateOptionsMenu(menu);
+		}
+
+		public override bool OnOptionsItemSelected(IMenuItem item)
+		{
+			SetUiLoadingState(true);
+			((EnsureApplication)ApplicationContext).LogUserOut();
+			ensures.Clear(); // Remove ensures
+			ensuresRvAdapter.NotifyDataSetChanged();
+			StartLoginActivity();
+			SetUiLoadingState(false);
+			return base.OnOptionsItemSelected(item);
+		}
+
 		enum ActivityRequestCodes
 		{
 			Login
@@ -218,10 +247,10 @@ namespace Ensure.AndroidApp
 		/// <summary> Ensure RecyclerView swipe/move event handler class </summary>
 		public class EnsureLogTouchHelper : ItemTouchHelper.Callback
 		{
-			private readonly Context context;
+			private readonly MainActivity context;
 			private readonly EnsureRecyclerAdapter adapter;
 			public bool EnableSwipe { get; set; }
-			public EnsureLogTouchHelper(Context context, EnsureRecyclerAdapter adapter)
+			public EnsureLogTouchHelper(MainActivity context, EnsureRecyclerAdapter adapter)
 			{
 				this.context = context;
 				this.adapter = adapter;
@@ -241,6 +270,7 @@ namespace Ensure.AndroidApp
 			public override async void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
 			{
 				const string EnsureTouchHelperOnSwipedTag = "EnsureTouchHelper.OnSwipe";
+				context.SetUiLoadingState(true);
 				Log.Debug(EnsureTouchHelperOnSwipedTag, $"Log with id {viewHolder.ItemId} swiped. Removing..");
 				// Remove item from local dataset & server:
 				var vh = (EnsureRecyclerAdapterViewHolder)viewHolder;
@@ -256,7 +286,8 @@ namespace Ensure.AndroidApp
 				{
 					Log.Error(EnsureTouchHelperOnSwipedTag, $"Remove item {viewHolder.ItemId} from remote failed");
 				}
-				else Log.Debug(EnsureTouchHelperOnSwipedTag,"Removing from remote succeeded.");
+				else Log.Debug(EnsureTouchHelperOnSwipedTag, "Removing from remote succeeded.");
+				context.SetUiLoadingState(false);
 			}
 		}
 
