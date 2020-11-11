@@ -39,9 +39,13 @@ namespace Ensure.AndroidApp
 		private async void LoginBtnClicked(object sender, EventArgs e)
 		{
 			Log.Debug("LoginActivity", "btn clicked");
+			string username = userNameEt.Text, pwd = pwdEt.Text;
+			if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
+			{
+				return;
+			}
 			try
 			{
-				string username = userNameEt.Text, pwd = pwdEt.Text;
 				SetUiLoadingState(true);
 
 				// Fetch
@@ -98,7 +102,7 @@ namespace Ensure.AndroidApp
 		private void SetUiLoadingState(bool isLoading)
 		{
 			topLoadingProgress.Indeterminate = isLoading;
-			goBtn.Clickable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+			goBtn.Clickable = goBtn.Enabled = goBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
 		}
 
 		public override void OnBackPressed()
