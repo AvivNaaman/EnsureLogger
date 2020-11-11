@@ -1,0 +1,106 @@
+﻿@model HomeViewModel
+@{
+	const string TodayName = "Today";
+	ViewData["Title"] = "Home Page";
+	string currDayName = Model.CurrentDate.Equals(DateTime.Today) ? TodayName : Model.CurrentDate.ToShortDateString();
+}
+
+<div class="row">
+	<form id="logform" class="col-12 col-md-9" asp-action="Add" asp-controller="Home" asp-area="" method="post">
+		<div class="form-row">
+			<div class="form-group col-sm-5 col-10">
+				<select asp-items="@Html.GetEnumSelectList<EnsureTaste>()" required autofocus
+						class="custom-select" id="logform-taste" name="taste">
+					<option selected disabled value="">Choose a taste</option>
+				</select>
+			</div>
+			<div class="form-group col-2 col-sm-3">
+				<button class="btn btn-success">
+					Add
+				</button>
+			</div>
+		</div>
+	</form>
+	<div class="col-md-3 col">
+		<input type="date" class="form-control" value="@Model.CurrentDate.ToString(EnsureConstants.DateTimeUrlFormat)" id="datepicker" onchange="changedHandler(event);" />
+	</div>
+</div>
+@if (Model.Logs.Count > 0)
+{
+	<table class="table">
+		<thead>
+		</thead>
+		<tbody>
+			@foreach (var log in Model.Logs)
+			{
+				<tr>
+					<td>
+						@log.Logged
+					</td>
+					<td>
+						@log.EnsureTaste.ToString()
+					</td>
+					<td>
+						<button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal" data-logid="@log.Id" data-date="@log.Logged.ToString()">
+							<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+								<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+								<path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+							</svg>
+						</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<h4 class="text-muted text-center ">Nothing logged at the moment.</h4>
+}
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteModalLabel">Delete Log</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<h5>Are you sure you'd like to delete the log from <span id="delete-modal-date"></span></h5>
+			</div>
+			<div class="modal-footer">
+				<form id="delete-modal-form" method="post">
+					<button class="btn btn-danger">
+						Delete
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+<script>
+		const currDate = "@Model.CurrentDate.ToString(EnsureConstants.DateTimeUrlFormat)";
+		const datepicker = document.querySelector("#datepicker");
+		function changedHandler (e) {
+			if (currDate !== datepicker.value) {
+				window.location.href = "@Url.Action("Logs", "Home", new { date = "" })" + "/" + datepicker.value;
+			}
+	};
+
+	// delete-modal-date, delete-modal-form
+	$('#deleteModal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget);
+		var logid = button.data('logid');
+		var date = button.data('date');
+
+		var modal = $(this);
+		modal.find('#delete-modal-date').text(date);
+		modal.find('#delete-modal-form').attr("target", "@Url.Action("Delete")" + "/" + logid);
+	});
+
+</script>
+}
