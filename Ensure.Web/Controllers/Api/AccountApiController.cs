@@ -18,13 +18,13 @@ namespace Ensure.Web.Controllers
 {
 	[Route("api/Account")]
 	[ApiController]
-	public class AccountApi : ControllerBase
+	public class AccountApiController : ControllerBase
 	{
 		private readonly UserManager<AppUser> _userManager;
 		private readonly SignInManager<AppUser> _signInManager;
 		private readonly IConfiguration config;
 
-		public AccountApi(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration config)
+		public AccountApiController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration config)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;

@@ -81,6 +81,7 @@ namespace Ensure.Web.Controllers
 		}
 
 		[HttpGet]
+		[Route("Logout")]
 		public async Task<IActionResult> Logout()
 		{
 			await _signInManager.SignOutAsync();
@@ -113,7 +114,7 @@ namespace Ensure.Web.Controllers
 			var l = await _ensureService.FindByIdAsync(id);
 			if (l == null || l.UserId != User.FindFirst(ClaimTypes.NameIdentifier).Value)
 			{
-				return NotFound();
+				return BadRequest();
 			}
 			string date = l.Logged.ToString(EnsureConstants.DateTimeUrlFormat);
 			await _ensureService.RemoveLogAsync(l);

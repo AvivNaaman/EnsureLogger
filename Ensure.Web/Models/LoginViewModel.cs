@@ -11,10 +11,12 @@ namespace Ensure.Web.Models
 		[Required]
 		[MinLength(4)]
 		[MaxLength(20)]
+		[DataType(DataType.Text)]
 		public string UserName { get; set; }
 		[Required]
 		[MinLength(6)]
 		[MaxLength(20)]
+		[DataType(DataType.Password)]
 		public string Password { get; set; }
 	}
 }

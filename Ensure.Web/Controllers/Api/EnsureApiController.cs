@@ -19,12 +19,12 @@ namespace Ensure.Web.Controllers
 	[Route("api/Ensure")]
 	[ApiController]
 	[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // use JWT Bearer for API
-	public class EnsureApi : ControllerBase
+	public class EnsureApiController : ControllerBase
 	{
 		private readonly IEnsureService _ensureService;
 		private readonly ITimeService _timeService;
 
-		public EnsureApi(IEnsureService ensureService, ITimeService timeService)
+		public EnsureApiController(IEnsureService ensureService, ITimeService timeService)
 		{
 			_ensureService = ensureService;
 			_timeService = timeService;
@@ -37,13 +37,12 @@ namespace Ensure.Web.Controllers
 			return await _ensureService.LogAsync(User.Identity.Name, taste);
 		}
 
-
-
 		[Route("[action]")]
+		[HttpPost]
 		public async Task<ActionResult> RemoveLog(string id)
 		{
 			var l = await _ensureService.FindByIdAsync(id);
-			if (l.UserId == User.FindFirst(ClaimTypes.NameIdentifier).Value)
+			if (l == null || l.UserId == User.FindFirst(ClaimTypes.NameIdentifier).Value)
 			{
 				await _ensureService.RemoveLogAsync(l);
 				return Ok();
@@ -52,6 +51,7 @@ namespace Ensure.Web.Controllers
 		}
 
 		[Route("[action]")]
+		[HttpGet]
 		public async Task<ActionResult<List<EnsureLog>>> GetLogs(string date)
 		{
 

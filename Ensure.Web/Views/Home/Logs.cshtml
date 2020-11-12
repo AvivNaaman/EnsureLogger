@@ -2,7 +2,7 @@
 @{
 	const string TodayName = "Today";
 	ViewData["Title"] = "Home Page";
-	string currDayName = Model.CurrentDate.Equals(DateTime.Today) ? TodayName : Model.CurrentDate.ToShortDateString();
+	string currDayName = Model.CurrentDate.Equals(DateTime.Today) ? TodayName : "at" + Model.CurrentDate.ToShortDateString();
 }
 
 <div class="row">
@@ -55,9 +55,10 @@
 }
 else
 {
-	<h4 class="text-muted text-center ">Nothing logged at the moment.</h4>
+	<h4 class="text-muted text-center ">Nothing logged @currDayName</h4>
 }
 
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -80,6 +81,7 @@ else
 		</div>
 	</div>
 </div>
+<!-- END Delete Modal --> 
 
 @section Scripts {
 <script>
@@ -99,7 +101,7 @@ else
 
 		var modal = $(this);
 		modal.find('#delete-modal-date').text(date);
-		modal.find('#delete-modal-form').attr("target", "@Url.Action("Delete")" + "/" + logid);
+		modal.find('#delete-modal-form').attr("action", "/Delete/"+ logid);
 	});
 
 </script>
