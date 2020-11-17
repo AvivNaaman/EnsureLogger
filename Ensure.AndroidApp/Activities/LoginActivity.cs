@@ -6,6 +6,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Helpers;
+using Ensure.AndroidApp.Models;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
 using System;
@@ -58,12 +59,12 @@ namespace Ensure.AndroidApp
 						throw new AuthenticationException("User name and password do not match.");
 					else throw new AuthenticationException($"Error: Status code {res.StatusCode} does not indicate success.");
 				}
-
+				string content = await res.Content.ReadAsStringAsync();
 				// Json
 				try
 				{
-					var userInfo = JsonConvert.DeserializeObject<ApiUserInfo>(await res.Content.ReadAsStringAsync());
-
+					Log.Debug("Login", $"Hello {content} END");
+					var userInfo = JsonConvert.DeserializeObject<UserInfoInternal>(content);
 					// Handle response
 					if (userInfo != null)
 					{
@@ -81,6 +82,7 @@ namespace Ensure.AndroidApp
 				}
 				catch (JsonException jEx)
 				{
+					Log.Error("JsonLogin", $"Json Parse failed. response: {content}, message: {jEx.Message}");
 					throw new AuthenticationException("Error: Failed to parse response from server.");
 				}
 			}

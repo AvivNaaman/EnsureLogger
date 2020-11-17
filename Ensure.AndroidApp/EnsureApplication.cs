@@ -2,8 +2,10 @@
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Models;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
 using System;
@@ -18,7 +20,7 @@ namespace Ensure.AndroidApp
 	{
 		const string SharedPrefernceName = "EnsureSp";
 		const string UserInfoSharedPreference = "UserInfo";
-		public ApiUserInfo UserInfo { get; private set; }
+		public UserInfoInternal UserInfo { get; private set; }
 		public bool IsLoggedIn { get { return UserInfo != null; } }
 		private ISharedPreferences _sharedPreferences;
 		public EnsureApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -30,12 +32,13 @@ namespace Ensure.AndroidApp
 			_sharedPreferences = GetSharedPreferences(SharedPrefernceName, FileCreationMode.Private);
 			// Try to get user's info
 			var userInfoJson = _sharedPreferences.GetString(UserInfoSharedPreference, String.Empty);
+			Log.Debug("EnsureApp", $"Hello! {userInfoJson}");
 			if (!String.IsNullOrEmpty(userInfoJson))
 			{
-				UserInfo = JsonConvert.DeserializeObject<ApiUserInfo>(userInfoJson);
+				UserInfo = JsonConvert.DeserializeObject<UserInfoInternal>(userInfoJson);
 			}
 		}
-		public void UpdateUserInfo(ApiUserInfo info)
+		public void UpdateUserInfo(UserInfoInternal info)
 		{
 			if (info == null) throw new NullReferenceException("User info cannot be null.");
 			else
