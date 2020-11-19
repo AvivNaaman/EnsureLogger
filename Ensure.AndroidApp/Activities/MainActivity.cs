@@ -18,6 +18,8 @@ using Ensure.AndroidApp.Helpers;
 using Ensure.AndroidApp.Adapters;
 using Android.Support.V7.Widget.Helper;
 using Android.Views;
+using Ensure.Domain;
+using Ensure.Domain.Models;
 
 namespace Ensure.AndroidApp
 {
@@ -36,6 +38,10 @@ namespace Ensure.AndroidApp
 		private SwipeRefreshLayout refreshLayout;
 
 		private TextView helloUserTv;
+
+		private TextView currDayTv;
+
+		private DateTime currDisplayedDate = DateTime.MinValue;
 		protected override async void OnCreate(Bundle savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
@@ -74,6 +80,10 @@ namespace Ensure.AndroidApp
 			refreshLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.MainActivityRefreshableLayout);
 			refreshLayout.Refresh += MainActivity_Refresh;
 
+			currDayTv = FindViewById<TextView>(Resource.Id.CurrDayTv);
+			FindViewById<Button>(Resource.Id.PrevDayBtn).Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, -1);
+			FindViewById<Button>(Resource.Id.NextDayBtn).Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, 1);
+
 			var mLayoutManager = new LinearLayoutManager(this);
 			// Logs recycler view (almost the same as ListView, but you can swipe out items)
 			logsRv = FindViewById<RecyclerView>(Resource.Id.EnsuresRv);
@@ -90,6 +100,11 @@ namespace Ensure.AndroidApp
 			}
 
 			addBtn.Clickable = true;
+		}
+
+		protected override void OnResume()
+		{
+			base.OnResume();
 		}
 
 		private async void MainActivity_Refresh(object sender, EventArgs e)
@@ -170,7 +185,8 @@ namespace Ensure.AndroidApp
 			SetUiLoadingState(true);
 			var http = new HttpHelper(this);
 			Log.Debug(EnsuresRefreshTag, "Fetch started");
-			var res = await http.GetAsync("/api/Ensure/GetLogs");
+			string dateStr = currDisplayedDate > DateTime.MinValue ? currDisplayedDate.ToString(EnsureConstants.DateTimeUrlFormat) : String.Empty;
+			var res = await http.GetAsync($"/api/Ensure/GetLogs?date={dateStr}");
 			Log.Debug(EnsuresRefreshTag, "Fetch done");
 
 			if (!res.IsSuccessStatusCode)
@@ -191,8 +207,13 @@ namespace Ensure.AndroidApp
 			{
 				// TODO: Check for a better way to handle this...
 				Log.Debug(EnsuresRefreshTag, "Deserializing result");
-				var newEnsures = JsonConvert.DeserializeObject<List<EnsureLog>>(await res.Content.ReadAsStringAsync());
-				ensures = newEnsures;
+				var newEnsures = JsonConvert.DeserializeObject<ApiEnsuresList>(await res.Content.ReadAsStringAsync());
+				if (currDisplayedDate <= DateTime.MinValue)
+				{
+					currDisplayedDate = newEnsures.CurrentReturnedDate;
+				}
+				currDayTv.Text = currDisplayedDate.ToShortDateString();
+				ensures = newEnsures.Logs;
 				ensuresRvAdapter.Items = ensures;
 				ensuresRvAdapter.NotifyDataSetChanged();
 			}
@@ -237,6 +258,14 @@ namespace Ensure.AndroidApp
 			StartLoginActivity();
 			SetUiLoadingState(false);
 			return base.OnOptionsItemSelected(item);
+		}
+
+		private async Task ChangeDateBtn_Clicked(object sender, EventArgs e, short DaysToAdd)
+		{
+			// add DaysToAdd to current date and then
+			currDisplayedDate = DaysToAdd > 0 ? currDisplayedDate.AddDays(DaysToAdd) : currDisplayedDate.Subtract(TimeSpan.FromDays(-DaysToAdd));
+			// refrsh ensures by new date
+			await RefreshEnsuresList();
 		}
 
 		enum ActivityRequestCodes

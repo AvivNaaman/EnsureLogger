@@ -37,7 +37,7 @@ namespace Ensure.AndroidApp.Adapters
 			var item = Items[position];
 			// Replace the contents of the view with that element
 			var holder = viewHolder as EnsureRecyclerAdapterViewHolder;
-			holder.DateLoggedTv.Text = item.Logged.ToString();
+			holder.DateLoggedTv.Text = item.Logged.ToShortTimeString();
 			holder.TasteTv.Text = item.EnsureTaste.ToString();
 			holder.LogId = item.Id;
 		}
