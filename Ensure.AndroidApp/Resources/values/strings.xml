@@ -3,7 +3,8 @@
   <string name="action_settings">Settings</string>
   <string name="PrevDayText">Prev.</string>
   <string name="NextDayText">Next</string>
-  <string name="AddLogBtnText">Add Today</string>
+  <string name="AddLogBtnText">Add</string>
+  <string name="AddLogDescription">Add Today</string>
   <string name="DefaultCurrDateText">Today</string>
   <string name="HelloUserDefaultText">Hello, $UserName$</string>
   <string name="LoginUserNameHint">User Name</string>
