@@ -40,6 +40,8 @@ namespace Ensure.AndroidApp
 		private TextView helloUserTv;
 
 		private TextView currDayTv;
+		private Button prevDayBtn;
+		private Button nextDayBtn;
 
 		private DateTime currDisplayedDate = DateTime.MinValue;
 		protected override async void OnCreate(Bundle savedInstanceState)
@@ -81,8 +83,10 @@ namespace Ensure.AndroidApp
 			refreshLayout.Refresh += MainActivity_Refresh;
 
 			currDayTv = FindViewById<TextView>(Resource.Id.CurrDayTv);
-			FindViewById<Button>(Resource.Id.PrevDayBtn).Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, -1);
-			FindViewById<Button>(Resource.Id.NextDayBtn).Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, 1);
+			prevDayBtn = FindViewById<Button>(Resource.Id.PrevDayBtn);
+			prevDayBtn.Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, -1);
+			nextDayBtn = FindViewById<Button>(Resource.Id.NextDayBtn);
+			nextDayBtn.Click += async (sender, e) => await ChangeDateBtn_Clicked(sender, e, 1);
 
 			var mLayoutManager = new LinearLayoutManager(this);
 			// Logs recycler view (almost the same as ListView, but you can swipe out items)
@@ -149,7 +153,7 @@ namespace Ensure.AndroidApp
 					Toast.MakeText(this, "Log Added", ToastLength.Long).Show();
 				}
 			}
-			catch (Exception ex)
+			catch
 			{
 
 			}
@@ -236,10 +240,10 @@ namespace Ensure.AndroidApp
 		{
 
 			const string ActivityMainSetUiLoadingStateTag = "ActivityMain.SetUiLoadingState";
-			Log.Debug(ActivityMainSetUiLoadingStateTag, $"UI Loading State: {isLoading}");
+			Log.Debug(ActivityMainSetUiLoadingStateTag, $"Settings UI Loading State: {isLoading}");
 			horizontalTopProgress.Indeterminate = isLoading; // "disabled"
-			refreshLayout.Enabled = addBtn.Clickable = logsRv.Enabled = !isLoading;
-			logsRvTouchHelper.EnableSwipe = !isLoading;
+			refreshLayout.Enabled = nextDayBtn.Enabled = prevDayBtn.Enabled =
+				addBtn.Enabled = logsRv.Enabled = logsRvTouchHelper.EnableSwipe = !isLoading;
 		}
 
 		public override bool OnCreateOptionsMenu(IMenu menu)
