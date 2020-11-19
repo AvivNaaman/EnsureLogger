@@ -13,5 +13,6 @@ namespace Ensure.Web.Services
 		public Task RemoveLogAsync(EnsureLog log);
 		public Task<List<EnsureLog>> GetUserDayLogsAsync(string userName, DateTime date);
 		public Task<EnsureLog> FindByIdAsync(string id);
+		public Task<int> GetDayCountAsync(string userName, DateTime date);
 	}
 }

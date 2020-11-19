@@ -54,7 +54,8 @@ namespace Ensure.Web.Controllers
 				{
 					Email = u.Email,
 					UserName = u.UserName,
-					JwtToken = jwtToken
+					DailyTarget = u.DailyTarget,
+					JwtToken = jwtToken,
 				};
 				return info;
 			}

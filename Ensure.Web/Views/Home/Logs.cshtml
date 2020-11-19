@@ -2,32 +2,59 @@
 @{
 	const string TodayName = "Today";
 	ViewData["Title"] = "Home Page";
-	string currDayName = Model.CurrentDate.Equals(DateTime.Today) ? TodayName : "at" + Model.CurrentDate.ToShortDateString();
+	string currDayName = Model.CurrentDate.Equals(DateTime.Today) ? TodayName : "at " + Model.CurrentDate.ToShortDateString();
 }
 
+<div class="m-5">
+	@* Daily Progress + Precentage & Coloring *@
+	@{
+		int todayPrecentage = (int)(((double)Model.UserDailyProgress) / Model.UserDailyTarget * 100);
+		string progressBg = "danger";
+		if (todayPrecentage > 45) progressBg = "warning";
+		if (todayPrecentage > 80) progressBg = "success";
+	}
+	<h4>
+		Today's progress: @Model.UserDailyProgress/@Model.UserDailyTarget
+		<a asp-action="Profile" asp-controller="Home" asp-area="" class="text-dark" title="Edit your daily target">
+			<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5L13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175l-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+			</svg>
+		</a>
+	</h4>
+	<div class="progress" style="height: 30px; font-size: 125%">
+		<div class="progress-bar bg-@progressBg" style="width: @todayPrecentage%;" role="progressbar" aria-valuenow="@todayPrecentage" aria-valuemin="0" aria-valuemax="100">@todayPrecentage%</div>
+	</div>
+</div>
+
 <div class="row">
-	<form id="logform" class="col-12 col-md-9" asp-action="Add" asp-controller="Home" asp-area="" method="post">
-		<div class="form-row">
-			<div class="form-group col-sm-5 col-10">
-				<select asp-items="@Html.GetEnumSelectList<EnsureTaste>()" required autofocus
-						class="custom-select" id="logform-taste" name="taste">
-					<option selected disabled value="">Choose a taste</option>
-				</select>
+	<div class="col-3 col-md-2 text-right justify-content-right align-self-right" style="font-size: 125%">
+		Add Log:
+	</div>
+	<div class="col-9 col-md-7">
+		<form id="logform" asp-action="Add" asp-controller="Home" asp-area="" method="post">
+			<div class="form-row">
+				<div class="form-group col-sm-5 col-10">
+					<select asp-items="@Html.GetEnumSelectList<EnsureTaste>()" required autofocus
+							class="custom-select" id="logform-taste" name="taste">
+						<option selected disabled value="">Choose a taste</option>
+					</select>
+				</div>
+				<div class="form-group col-2 col-sm-3">
+					<button class="btn btn-success">
+						Add
+					</button>
+				</div>
 			</div>
-			<div class="form-group col-2 col-sm-3">
-				<button class="btn btn-success">
-					Add
-				</button>
-			</div>
-		</div>
-	</form>
+		</form>
+	</div>
 	<div class="col-md-3 col">
 		<input type="date" class="form-control" value="@Model.CurrentDate.ToString(EnsureConstants.DateTimeUrlFormat)" id="datepicker" onchange="changedHandler(event);" />
 	</div>
 </div>
+
 @if (Model.Logs.Count > 0)
 {
-	<table class="table">
+	<table class="table text-center" style="font-size: 135%;">
 		<thead>
 		</thead>
 		<tbody>
@@ -35,7 +62,7 @@
 			{
 				<tr>
 					<td>
-						@log.Logged
+						@log.Logged.ToShortTimeString()
 					</td>
 					<td>
 						@log.EnsureTaste.ToString()
@@ -55,7 +82,7 @@
 }
 else
 {
-	<h4 class="text-muted text-center ">Nothing logged @currDayName</h4>
+	<h4 class="text-muted text-center m-3">Nothing logged @currDayName</h4>
 }
 
 <!-- Delete Modal -->

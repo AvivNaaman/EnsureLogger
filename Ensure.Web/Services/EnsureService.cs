@@ -42,6 +42,15 @@ namespace Ensure.Web.Services
 			return r;
 		}
 
+		public async Task<int> GetDayCountAsync(string userName, DateTime date)
+		{
+			var u = await _userManager.FindByNameAsync(userName);
+
+			var dayAfterDate = date.AddDays(1);
+
+			return await _dbContext.Logs.Where(l => l.Logged >= date && l.Logged < dayAfterDate && l.UserId == u.Id).CountAsync();
+		}
+
 		public async Task<EnsureLog> LogAsync(string userName, EnsureTaste taste)
 		{
 			var u = await _userManager.FindByNameAsync(userName);

@@ -29,6 +29,8 @@ namespace Ensure.Web.Data
 			builder.Entity<AppUser>(e =>
 			{
 				e.HasMany(u => u.Logs).WithOne().HasForeignKey(l => l.UserId).IsRequired(false);
+				e.Property(u => u.DailyTarget).HasDefaultValue(2);
+				e.Property(u => u.TimeZone).HasDefaultValue(2);
 			});
 		}
 	}

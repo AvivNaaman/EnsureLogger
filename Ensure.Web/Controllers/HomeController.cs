@@ -25,14 +25,16 @@ namespace Ensure.Web.Controllers
 		private readonly SignInManager<AppUser> _signInManager;
 		private readonly IEnsureService _ensureService;
 		private readonly ITimeService _timeService;
+		private readonly UserManager<AppUser> _userManager;
 
 		public HomeController(ILogger<HomeController> logger, SignInManager<AppUser> signInManager,
-			IEnsureService ensureService, ITimeService timeService)
+			IEnsureService ensureService, ITimeService timeService, UserManager<AppUser> userManager)
 		{
 			_logger = logger;
 			_signInManager = signInManager;
 			_ensureService = ensureService;
 			_timeService = timeService;
+			_userManager = userManager;
 		}
 
 		[ResponseCache(Duration = int.MaxValue, Location = ResponseCacheLocation.Any)]
@@ -42,7 +44,8 @@ namespace Ensure.Web.Controllers
 		[Route("Logs/{date?}")]
 		public async Task<IActionResult> Logs(string date)
 		{
-			int userTimeZone = await _timeService.GetUserGmtTimeZoneAsync(User.Identity.Name);
+			var u = await _userManager.FindByNameAsync(User.Identity.Name);
+			int userTimeZone = u.TimeZone;
 			// user's time
 			DateTime d = DateTime.UtcNow.Add(TimeSpan.FromHours(userTimeZone));
 			try
@@ -51,11 +54,19 @@ namespace Ensure.Web.Controllers
 			}
 			catch { }
 
+			var currDayLogs = await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
+					d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
+
+			var todayCount = d == DateTime.UtcNow.Add(TimeSpan.FromHours(userTimeZone)) ? currDayLogs.Count : await _ensureService.GetDayCountAsync(User.Identity.Name,
+					DateTime.UtcNow.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
+
 			var vm = new HomeViewModel()
 			{
-				Logs = await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
-					d.Date.Subtract(TimeSpan.FromHours(userTimeZone))),
+				Logs = currDayLogs,
 				CurrentDate = d.Date,
+				// current day progress - just count
+				UserDailyProgress = todayCount,
+				UserDailyTarget = u.DailyTarget,
 			};
 			return View(vm);
 		}
@@ -120,5 +131,20 @@ namespace Ensure.Web.Controllers
 			await _ensureService.RemoveLogAsync(l);
 			return RedirectToAction("Logs", new { date });
 		}
+
+		// TODO: Implement UI
+		[Route("Profile")]
+		[HttpGet]
+		public async Task<IActionResult> Profile() => View(await _userManager.FindByNameAsync(User.Identity.Name));
+
+		[HttpGet]
+		[AllowAnonymous]
+		[Route("SignUp")]
+		public IActionResult SignUp() => View();
+
+		[HttpPost]
+		[AllowAnonymous]
+		[Route("SignUp")]
+		public IActionResult SignUp() => View();
 	}
 }

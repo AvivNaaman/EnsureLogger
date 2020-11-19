@@ -11,5 +11,7 @@ namespace Ensure.Web.Models
 	{
 		public List<EnsureLog> Logs { get; set; }
 		public DateTime CurrentDate { get; set; }
+		public short UserDailyTarget { get; set; }
+		public int UserDailyProgress { get; set; }
 	}
 }
