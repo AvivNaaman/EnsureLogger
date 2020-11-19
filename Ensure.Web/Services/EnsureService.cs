@@ -34,7 +34,9 @@ namespace Ensure.Web.Services
 		{
 			var u = await _userManager.FindByNameAsync(userName);
 
-			var r = await _dbContext.Logs.Where(l => l.Logged >= date && l.UserId == u.Id).ToListAsync();
+			var dayAfterDate = date.AddDays(1);
+
+			var r = await _dbContext.Logs.Where(l => l.Logged >= date && l.Logged < dayAfterDate && l.UserId == u.Id).ToListAsync();
 
 			r.ForEach(l => l.Logged.AddHours(u.TimeZone));
 			return r;
