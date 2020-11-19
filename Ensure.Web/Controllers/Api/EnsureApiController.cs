@@ -1,6 +1,7 @@
 ﻿using Ensure.Domain;
 using Ensure.Domain.Entities;
 using Ensure.Domain.Enums;
+using Ensure.Domain.Models;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -52,7 +53,7 @@ namespace Ensure.Web.Controllers
 
 		[Route("[action]")]
 		[HttpGet]
-		public async Task<ActionResult<List<EnsureLog>>> GetLogs(string date)
+		public async Task<ActionResult<ApiEnsuresList>> GetLogs(string date)
 		{
 
 			int userTimeZone = await _timeService.GetUserGmtTimeZoneAsync(User.Identity.Name);
@@ -63,9 +64,9 @@ namespace Ensure.Web.Controllers
 				d = DateTime.ParseExact(date, EnsureConstants.DateTimeUrlFormat, CultureInfo.InvariantCulture);
 			}
 			catch { }
-
-			return await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
+			var el = await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
 					d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
+			return new ApiEnsuresList { CurrentReturnedDate = d, Logs = el };
 		}
 	}
 }
