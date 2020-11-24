@@ -4,7 +4,7 @@
   <string name="PrevDayText">Prev.</string>
   <string name="NextDayText">Next</string>
   <string name="AddLogBtnText">Add</string>
-  <string name="AddLogDescription">Add Today</string>
+  <string name="AddLogDescription">+ Log Now</string>
   <string name="DefaultCurrDateText">Today</string>
   <string name="HelloUserDefaultText">Hello, $UserName$</string>
   <string name="LoginUserNameHint">User Name</string>

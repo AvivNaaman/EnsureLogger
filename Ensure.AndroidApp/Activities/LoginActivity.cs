@@ -6,7 +6,6 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Helpers;
-using Ensure.AndroidApp.Models;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
 using System;
@@ -64,7 +63,7 @@ namespace Ensure.AndroidApp
 				try
 				{
 					Log.Debug("Login", $"Hello {content} END");
-					var userInfo = JsonConvert.DeserializeObject<UserInfoInternal>(content);
+					var userInfo = JsonConvert.DeserializeObject<ApiUserInfo>(content);
 					// Handle response
 					if (userInfo != null)
 					{

@@ -43,6 +43,8 @@ namespace Ensure.AndroidApp
 		private Button prevDayBtn;
 		private Button nextDayBtn;
 
+		private ProgressBar todayProgress;
+
 		private DateTime currDisplayedDate = DateTime.MinValue;
 		protected override async void OnCreate(Bundle savedInstanceState)
 		{
@@ -51,6 +53,7 @@ namespace Ensure.AndroidApp
 
 			// Move to login activity if hsn't logged in yet
 			var app = (EnsureApplication)ApplicationContext;
+
 			if (!app.IsLoggedIn)
 			{
 				StartLoginActivity();
@@ -61,10 +64,6 @@ namespace Ensure.AndroidApp
 
 			// Hello, UserName message
 			helloUserTv = FindViewById<TextView>(Resource.Id.HelloUserTv);
-			if (app.IsLoggedIn)
-			{
-				helloUserTv.Text = $"Hello, {app.UserInfo.UserName}";
-			}
 
 			// Taste picker
 			tasteSpinner = FindViewById<Spinner>(Resource.Id.EnsureTasteSpinner);
@@ -98,12 +97,14 @@ namespace Ensure.AndroidApp
 			ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
 			itemTouchHelper.AttachToRecyclerView(logsRv);
 
+			todayProgress = FindViewById<ProgressBar>(Resource.Id.TodayProgressBar);
+
 			if (app.IsLoggedIn)
 			{
+				helloUserTv.Text = $"Hello, {app.UserInfo.UserName}";
+				await RefreshUserTargetStatus();
 				await RefreshEnsuresList();
 			}
-
-			addBtn.Clickable = true;
 		}
 
 		protected override void OnResume()
@@ -176,11 +177,46 @@ namespace Ensure.AndroidApp
 			{
 				case ActivityRequestCodes.Login: // login
 					helloUserTv.Text = $"Hello, {app.UserInfo.UserName}";
+					todayProgress.Max = app.UserInfo.DailyTarget;
 					await RefreshEnsuresList();
 					break;
 				default:
 					break;
 			}
+		}
+
+		private async Task RefreshUserTargetStatus()
+		{
+			SetUiLoadingState(true);
+			var http = new HttpHelper(this);
+			var res = await http.GetAsync("/api/Ensure/GetTarget");
+			if (!res.IsSuccessStatusCode)
+			{
+				if (res.StatusCode.HasFlag(System.Net.HttpStatusCode.Unauthorized) || res.StatusCode.HasFlag(System.Net.HttpStatusCode.Forbidden))
+				{
+					Log.Info("RefreshTarget", $"Authentication is required by status code {res.StatusCode}");
+					StartLoginActivity();
+					SetUiLoadingState(false);
+					return;
+				}
+				else
+				{
+					// TODO: Decide how to put an error to the users' faces
+				}
+			}
+
+			try
+			{
+				short target = short.Parse(await res.Content.ReadAsStringAsync());
+				((EnsureApplication)ApplicationContext).UserInfo.DailyTarget = target;
+				todayProgress.Max = target;
+			}
+			catch
+			{
+
+			}
+
+			SetUiLoadingState(false);
 		}
 
 		private async Task RefreshEnsuresList()
@@ -199,6 +235,7 @@ namespace Ensure.AndroidApp
 				{
 					Log.Info(EnsuresRefreshTag, $"Authentication is required by status code {res.StatusCode}");
 					StartLoginActivity();
+					SetUiLoadingState(false);
 					return;
 				}
 				else
@@ -220,11 +257,29 @@ namespace Ensure.AndroidApp
 				ensures = newEnsures.Logs;
 				ensuresRvAdapter.Items = ensures;
 				ensuresRvAdapter.NotifyDataSetChanged();
+				// TODO: today progress
 			}
 			catch
 			{
 
 			}
+			res = await http.GetAsync("/api/Ensure/TodayProgress");
+			if (!res.IsSuccessStatusCode)
+			{
+
+			}
+
+
+			try
+			{
+				short progress = short.Parse(await res.Content.ReadAsStringAsync());
+				todayProgress.Progress = progress;
+			}
+			catch
+			{
+
+			}
+
 			SetUiLoadingState(false);
 		}
 

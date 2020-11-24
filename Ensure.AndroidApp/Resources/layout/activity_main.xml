@@ -27,6 +27,35 @@
             android:layout_marginHorizontal="12sp"
             android:id="@+id/HelloUserTv"/>
         <LinearLayout
+            android:layout_margin="7dp"
+            android:layout_width="match_parent"
+            android:layout_height="0sp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:padding="7dp"
+                android:layout_height="match_parent"
+                android:id="@+id/TodayProgressTv"
+                android:gravity="center"
+                android:text="Today: "
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="2dp"
+                android:autoSizeMaxTextSize="100dp"
+                android:autoSizeStepGranularity="2dp"/>
+            <ProgressBar
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+                android:id="@+id/TodayProgressBar"/>
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0sp"
             android:layout_weight="1"
@@ -54,6 +83,16 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:autoSizeMaxTextSize="100dp"
+            android:autoSizeMinTextSize="20dp"
+            android:autoSizeStepGranularity="2sp"
+            android:autoSizeTextType="uniform"
+            android:text="History"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
