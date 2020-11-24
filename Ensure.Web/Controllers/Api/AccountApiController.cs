@@ -75,5 +75,11 @@ namespace Ensure.Web.Controllers
 				Email = email
 			}, pwd);
 		}
+
+		[Route("GetTarget")]
+		public async Task<ActionResult<short>> GetTarget()
+		{
+			return (await _userManager.FindByNameAsync(User.Identity.Name)).DailyTarget;
+		}
 	}
 }

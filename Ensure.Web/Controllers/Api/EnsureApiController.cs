@@ -68,5 +68,9 @@ namespace Ensure.Web.Controllers
 					d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
 			return new ApiEnsuresList { CurrentReturnedDate = d, Logs = el };
 		}
+
+		[Route("TodayProgress")]
+		[HttpGet]
+		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(String.Empty)).Value.Logs.Count;
 	}
 }
