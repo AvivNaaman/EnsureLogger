@@ -57,6 +57,8 @@ namespace Ensure.Web.Controllers
 			var currDayLogs = await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
 					d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
 
+			currDayLogs.ForEach(l => l.Logged = l.Logged.AddHours(userTimeZone));
+
 			var todayCount = d == DateTime.UtcNow.Add(TimeSpan.FromHours(userTimeZone)) ? currDayLogs.Count : await _ensureService.GetDayCountAsync(User.Identity.Name,
 					DateTime.UtcNow.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
 
@@ -137,14 +139,20 @@ namespace Ensure.Web.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Profile() => View(await _userManager.FindByNameAsync(User.Identity.Name));
 
+		// TODO: Implement UI
 		[HttpGet]
 		[AllowAnonymous]
 		[Route("SignUp")]
 		public IActionResult SignUp() => View();
 
+		// TODO: Implement Logic
 		[HttpPost]
 		[AllowAnonymous]
 		[Route("SignUp")]
-		public IActionResult SignUp() => View();
+		public IActionResult SignUp(SignUpViewModel model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			return Redirect("");
+		}
 	}
 }
