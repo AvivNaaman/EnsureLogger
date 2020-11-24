@@ -1,0 +1,21 @@
+﻿@model Ensure.Web.Data.AppUser
+@{ 
+	ViewData["Title"] = Model.UserName;
+}
+
+<h2 class="">@Model.UserName</h2>
+<h6 class="text-secondary">@Model.Email</h6>
+
+<form method="post" asp-action="UpdateTarget" asp-controller="Home" asp-area="">
+	<div class="form-row">
+		<div class="col">
+			<span>Daily target:</span>
+		</div>
+		<div class="col">
+			<input type="text" class="form-control" asp-for="DailyTarget" min="1" required>
+		</div>
+		<div class="col">
+			<button class="btn btn-primary">Save</button>
+		</div>
+	</div>
+</form>

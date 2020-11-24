@@ -154,5 +154,20 @@ namespace Ensure.Web.Controllers
 			if (!ModelState.IsValid) return View(model);
 			return Redirect("");
 		}
+
+		[HttpPost]
+		[Route("Profile/UpdateTarget")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateTarget([FromForm] short dailyTarget)
+		{
+			if (dailyTarget > 0)
+			{
+				var u = await _userManager.FindByNameAsync(User.Identity.Name);
+				u.DailyTarget = dailyTarget;
+				await _userManager.UpdateAsync(u);
+				return RedirectToAction("Profile");
+			}
+			return RedirectToAction("Profile");
+		}
 	}
 }
