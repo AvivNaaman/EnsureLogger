@@ -189,7 +189,7 @@ namespace Ensure.AndroidApp
 		{
 			SetUiLoadingState(true);
 			var http = new HttpHelper(this);
-			var res = await http.GetAsync("/api/Ensure/GetTarget");
+			var res = await http.GetAsync("/api/Account/GetTarget");
 			if (!res.IsSuccessStatusCode)
 			{
 				if (res.StatusCode.HasFlag(System.Net.HttpStatusCode.Unauthorized) || res.StatusCode.HasFlag(System.Net.HttpStatusCode.Forbidden))
@@ -207,7 +207,8 @@ namespace Ensure.AndroidApp
 
 			try
 			{
-				short target = short.Parse(await res.Content.ReadAsStringAsync());
+				string re = await res.Content.ReadAsStringAsync();
+				short target = short.Parse(re);
 				((EnsureApplication)ApplicationContext).UserInfo.DailyTarget = target;
 				todayProgress.Max = target;
 			}

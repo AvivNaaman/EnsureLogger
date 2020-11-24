@@ -69,7 +69,7 @@ namespace Ensure.Web.Controllers
 			return new ApiEnsuresList { CurrentReturnedDate = d, Logs = el };
 		}
 
-		[Route("TodayProgress")]
+		[Route("[action]")]
 		[HttpGet]
 		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(String.Empty)).Value.Logs.Count;
 	}

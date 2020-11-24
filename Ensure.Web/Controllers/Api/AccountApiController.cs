@@ -77,6 +77,7 @@ namespace Ensure.Web.Controllers
 		}
 
 		[Route("GetTarget")]
+		[HttpGet]
 		public async Task<ActionResult<short>> GetTarget()
 		{
 			return (await _userManager.FindByNameAsync(User.Identity.Name)).DailyTarget;
