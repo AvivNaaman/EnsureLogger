@@ -1,5 +1,6 @@
 ﻿using Ensure.Domain.Models;
 using Ensure.Web.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,7 @@ using System.Threading.Tasks;
 namespace Ensure.Web.Controllers
 {
 	[Route("api/Account")]
+	[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 	[ApiController]
 	public class AccountApiController : ControllerBase
 	{
@@ -31,8 +33,8 @@ namespace Ensure.Web.Controllers
 			this.config = config;
 		}
 
-		[HttpPost]
-		[HttpGet]
+		[AcceptVerbs("POST", "GET")]
+		[AllowAnonymous]
 		[Route("Login")]
 		public async Task<ActionResult<ApiUserInfo>> Login(string username, string password)
 		{
@@ -78,7 +80,7 @@ namespace Ensure.Web.Controllers
 
 		[Route("GetTarget")]
 		[HttpGet]
-		public async Task<ActionResult<short>> GetTarget()
+		public async Task<ActionResult<int>> GetTarget()
 		{
 			return (await _userManager.FindByNameAsync(User.Identity.Name)).DailyTarget;
 		}
