@@ -15,14 +15,11 @@ namespace Ensure.Web.Services
 	{
 		private readonly UserManager<AppUser> _userManager;
 		private readonly ApplicationDbContext _dbContext;
-		private readonly ITimeService _timeService;
 
-		public EnsureService(UserManager<AppUser> userManager, ApplicationDbContext dbContext,
-			ITimeService timeService)
+		public EnsureService(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
 		{
 			_userManager = userManager;
 			_dbContext = dbContext;
-			_timeService = timeService;
 		}
 
 		public Task<EnsureLog> FindByIdAsync(string id)

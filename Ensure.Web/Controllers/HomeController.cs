@@ -21,19 +21,15 @@ namespace Ensure.Web.Controllers
 	[Route("/")]
 	public class HomeController : Controller
 	{
-		private readonly ILogger<HomeController> _logger;
 		private readonly SignInManager<AppUser> _signInManager;
 		private readonly IEnsureService _ensureService;
-		private readonly ITimeService _timeService;
 		private readonly UserManager<AppUser> _userManager;
 
-		public HomeController(ILogger<HomeController> logger, SignInManager<AppUser> signInManager,
-			IEnsureService ensureService, ITimeService timeService, UserManager<AppUser> userManager)
+		public HomeController(SignInManager<AppUser> signInManager,
+			IEnsureService ensureService, UserManager<AppUser> userManager)
 		{
-			_logger = logger;
 			_signInManager = signInManager;
 			_ensureService = ensureService;
-			_timeService = timeService;
 			_userManager = userManager;
 		}
 

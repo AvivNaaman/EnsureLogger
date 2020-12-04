@@ -152,6 +152,7 @@ namespace Ensure.AndroidApp
 					ensures.Insert(0, result);
 					ensuresRvAdapter.NotifyDataSetChanged();
 					Toast.MakeText(this, "Log Added", ToastLength.Long).Show();
+					todayProgress.Progress++;
 				}
 			}
 			catch
@@ -312,10 +313,11 @@ namespace Ensure.AndroidApp
 		public override bool OnOptionsItemSelected(IMenuItem item)
 		{
 			SetUiLoadingState(true);
+			StartLoginActivity(); // exit to login activity
 			((EnsureApplication)ApplicationContext).LogUserOut();
-			ensures.Clear(); // Remove ensures
+			ensures.Clear(); // Remove ensures & any other previous user data on UI
 			ensuresRvAdapter.NotifyDataSetChanged();
-			StartLoginActivity();
+			todayProgress.Progress = 0;
 			SetUiLoadingState(false);
 			return base.OnOptionsItemSelected(item);
 		}
@@ -375,7 +377,11 @@ namespace Ensure.AndroidApp
 				{
 					Log.Error(EnsureTouchHelperOnSwipedTag, $"Remove item {viewHolder.ItemId} from remote failed");
 				}
-				else Log.Debug(EnsureTouchHelperOnSwipedTag, "Removing from remote succeeded.");
+				else
+				{
+					context.todayProgress.Progress--;
+					Log.Debug(EnsureTouchHelperOnSwipedTag, "Removing from remote succeeded.");
+				}
 				context.SetUiLoadingState(false);
 			}
 		}

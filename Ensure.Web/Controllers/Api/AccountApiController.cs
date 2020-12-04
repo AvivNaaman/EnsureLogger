@@ -23,13 +23,11 @@ namespace Ensure.Web.Controllers
 	public class AccountApiController : ControllerBase
 	{
 		private readonly UserManager<AppUser> _userManager;
-		private readonly SignInManager<AppUser> _signInManager;
 		private readonly IConfiguration config;
 
-		public AccountApiController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IConfiguration config)
+		public AccountApiController(UserManager<AppUser> userManager, IConfiguration config)
 		{
 			_userManager = userManager;
-			_signInManager = signInManager;
 			this.config = config;
 		}
 
@@ -41,7 +39,7 @@ namespace Ensure.Web.Controllers
 			var u = await _userManager.FindByNameAsync(username);
 			if (await _userManager.CheckPasswordAsync(u, password))
 			{
-				var handler = new JwtSecurityTokenHandler();
+				#region GenerateJwtToken
 				var key = Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]);
 				var tokenDescriptor = new JwtSecurityToken(null, null, claims: new List<Claim>()
 					{
@@ -52,6 +50,7 @@ namespace Ensure.Web.Controllers
 				expires: DateTime.UtcNow.AddYears(1),
 				signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature));
 				string jwtToken = (new JwtSecurityTokenHandler()).WriteToken(tokenDescriptor);
+				#endregion
 				var info = new ApiUserInfo()
 				{
 					Email = u.Email,

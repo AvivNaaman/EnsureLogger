@@ -92,7 +92,7 @@ namespace Ensure.Web
 			app.UseHttpsRedirection();
 
 			// Allow .apk downloading
-			FileExtensionContentTypeProvider contentTypes = new FileExtensionContentTypeProvider();
+			FileExtensionContentTypeProvider contentTypes = new();
 			contentTypes.Mappings[".apk"] = "application/vnd.android.package-archive";
 			app.UseStaticFiles(new StaticFileOptions
 			{
