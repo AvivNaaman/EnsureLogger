@@ -17,7 +17,10 @@ using System.Threading.Tasks;
 
 namespace Ensure.Web.Controllers
 {
-	[Authorize()]
+	/// <summary>
+    /// The Web UI Controller
+    /// </summary>
+	[Authorize]
 	[Route("/")]
 	public class HomeController : Controller
 	{
@@ -33,10 +36,15 @@ namespace Ensure.Web.Controllers
 			_userManager = userManager;
 		}
 
+		/* Redirect App base (~/) to Logs (~/Logs). Cahce for performance */
 		[ResponseCache(Duration = int.MaxValue, Location = ResponseCacheLocation.Any)]
 		[Route("/")]
 		public IActionResult Index() => RedirectToAction("Logs");
 
+		/// <summary>
+        /// Main Action - Displays date's logs
+        /// </summary>
+        /// <param name="date">The date to display</param>
 		[Route("Logs/{date?}")]
 		public async Task<IActionResult> Logs(string date)
 		{
@@ -69,7 +77,54 @@ namespace Ensure.Web.Controllers
 			return View(vm);
 		}
 
-		[HttpGet]
+		/// <summary>
+        /// User Error Page
+        /// </summary>
+        /// <returns></returns>
+		[Route("Error")]
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		public IActionResult Error()
+		{
+			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+		}
+
+        #region EnsuresCD
+        /// <summary>
+        /// Add Ensure Log
+        /// </summary>
+        /// <param name="taste">The taste</param>
+        [Route("Add")]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Add([FromForm] EnsureTaste taste)
+		{
+			await _ensureService.LogAsync(User.Identity.Name, taste);
+			return RedirectToAction("Logs");
+		}
+
+		/// <summary>
+        /// Remove Ensure Log
+        /// </summary>
+        /// <param name="id">The log identifier</param>
+		[Route("Delete/{id}")]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Delete(string id)
+		{
+			var l = await _ensureService.FindByIdAsync(id);
+			if (l == null || l.UserId != User.FindFirst(ClaimTypes.NameIdentifier).Value)
+			{
+				return BadRequest();
+			}
+			string date = l.Logged.ToString(EnsureConstants.DateTimeUrlFormat);
+			await _ensureService.RemoveLogAsync(l);
+			return RedirectToAction("Logs", new { date });
+		}
+        #endregion
+
+        #region UserAndProfile
+        /* Login: GET & POST */
+        [HttpGet]
 		[AllowAnonymous]
 		[Route("Login")]
 		public IActionResult Login() => View();
@@ -89,7 +144,8 @@ namespace Ensure.Web.Controllers
 			return RedirectToAction("Logs");
 		}
 
-		[HttpGet]
+		/* Logout */
+		[AcceptVerbs("GET", "POST")]
 		[Route("Logout")]
 		public async Task<IActionResult> Logout()
 		{
@@ -97,60 +153,54 @@ namespace Ensure.Web.Controllers
 			return RedirectToAction("Logs");
 		}
 
-		[Route("Error")]
-		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-		public IActionResult Error()
-		{
-			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-		}
+		/* Signup: GET & POST */
+		[HttpGet]
+		[AllowAnonymous]
+		[Route("SignUp")]
+		public IActionResult SignUp() => User.Identity.IsAuthenticated ? Redirect("View") : View();
 
-		// Add via form
-		[Route("Add")]
 		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Add([FromForm] EnsureTaste taste)
+		[AllowAnonymous]
+		[Route("SignUp")]
+		public async Task<IActionResult> SignUp(SignUpViewModel model)
 		{
-			await _ensureService.LogAsync(User.Identity.Name, taste);
-			return RedirectToAction("Logs");
-		}
-
-		// Add via form
-		[Route("Delete/{id}")]
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Delete(string id)
-		{
-			var l = await _ensureService.FindByIdAsync(id);
-			if (l == null || l.UserId != User.FindFirst(ClaimTypes.NameIdentifier).Value)
+			if (User.Identity.IsAuthenticated) return Redirect("~/");
+			if (!ModelState.IsValid) return View(model);
+			AppUser u = new()
 			{
-				return BadRequest();
-			}
-			string date = l.Logged.ToString(EnsureConstants.DateTimeUrlFormat);
-			await _ensureService.RemoveLogAsync(l);
-			return RedirectToAction("Logs", new { date });
+				Email = model.Email,
+				UserName = model.UserName,
+				DailyTarget = model.DailyTarget,
+				TimeZone = model.TimeZone,
+			};
+			var res = await _userManager.CreateAsync(u);
+			if (res.Succeeded)
+            {
+				await _signInManager.SignInAsync(u, false);
+				return Redirect("~/");
+            }
+			else
+            {
+                foreach (var err in res.Errors)
+                {
+					ModelState.AddModelError("", err.Description);
+                }
+				return View(model);
+            }
 		}
 
-		// TODO: Implement UI
+		/* Profile */
+		/// <summary>
+        /// User's information page
+        /// </summary>
 		[Route("Profile")]
 		[HttpGet]
 		public async Task<IActionResult> Profile() => View(await _userManager.FindByNameAsync(User.Identity.Name));
 
-		// TODO: Implement UI
-		[HttpGet]
-		[AllowAnonymous]
-		[Route("SignUp")]
-		public IActionResult SignUp() => View();
-
-		// TODO: Implement Logic
-		[HttpPost]
-		[AllowAnonymous]
-		[Route("SignUp")]
-		public IActionResult SignUp(SignUpViewModel model)
-		{
-			if (!ModelState.IsValid) return View(model);
-			return Redirect("");
-		}
-
+		/// <summary>
+        /// Updates the user's target
+        /// </summary>
+        /// <param name="dailyTarget">The new target</param>
 		[HttpPost]
 		[Route("Profile/UpdateTarget")]
 		[ValidateAntiForgeryToken]
@@ -165,5 +215,9 @@ namespace Ensure.Web.Controllers
 			}
 			return RedirectToAction("Profile");
 		}
+
+
+		#endregion
+
 	}
 }
