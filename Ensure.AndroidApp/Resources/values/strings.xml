@@ -10,5 +10,7 @@
   <string name="LoginUserNameHint">User Name</string>
   <string name="LoginPwdHint">Password</string>
   <string name="LoginBtnText">Log in</string>
-  <string name="LoginWelcomeText">Welcome!</string>
+  <string name="LoginWelcomeTitle">Welcome!</string>
+  <string name="LoginWelcomeText">Log in with your account to continue:</string>
+    <string name="LoginRegisterBtnText">Join Us</string>
 </resources>

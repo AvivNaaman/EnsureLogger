@@ -20,7 +20,7 @@ namespace Ensure.AndroidApp
 	public class LoginActivity : Activity
 	{
 		private EditText userNameEt, pwdEt;
-		private Button goBtn;
+		private Button submitBtn, registerBtn;
 		private ProgressBar topLoadingProgress;
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
@@ -32,9 +32,19 @@ namespace Ensure.AndroidApp
 
 			topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.LoginActivityTopProgress);
 
-			goBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
-			goBtn.Click += LoginBtnClicked;
+			submitBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
+			submitBtn.Click += LoginBtnClicked;
+
+			registerBtn = FindViewById<Button>(Resource.Id.LoginRegisterBtn);
+			registerBtn.Click += RegisterBtnClicked;
 		}
+
+		private void RegisterBtnClicked(object sender, EventArgs e)
+        {
+			// Start Register activity
+			var i = new Intent(this, typeof(RegisterActivity));
+			StartActivityForResult(i, (int)ActvityResults.Register);
+        }
 
 		private async void LoginBtnClicked(object sender, EventArgs e)
 		{
@@ -103,12 +113,21 @@ namespace Ensure.AndroidApp
 		private void SetUiLoadingState(bool isLoading)
 		{
 			topLoadingProgress.Indeterminate = isLoading;
-			goBtn.Clickable = goBtn.Enabled = goBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+			submitBtn.Clickable = submitBtn.Enabled = submitBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
 		}
 
 		public override void OnBackPressed()
 		{
-			// Prevent user from leaving activity!
+			// Prevent user from leaving activity - do nothing.
 		}
+
+
+		/// <summary>
+		/// The Activity Results for the current activity
+		/// </summary>
+		private enum ActvityResults
+		{
+			Register
+		};
 	}
 }
