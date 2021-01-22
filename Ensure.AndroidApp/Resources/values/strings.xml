@@ -7,10 +7,26 @@
   <string name="AddLogDescription">+ Log Now</string>
   <string name="DefaultCurrDateText">Today</string>
   <string name="HelloUserDefaultText">Hello, $UserName$</string>
+    <!-- Login -->
   <string name="LoginUserNameHint">User Name</string>
   <string name="LoginPwdHint">Password</string>
   <string name="LoginBtnText">Log in</string>
   <string name="LoginWelcomeTitle">Welcome!</string>
   <string name="LoginWelcomeText">Log in with your account to continue:</string>
-    <string name="LoginRegisterBtnText">Join Us</string>
+  <string name="LoginRegisterBtnText">Join Us</string>
+    <!-- Register -->
+  <string name="RegisterUserNameHint">User Name</string>
+  <string name="RegisterEmailHint">Email</string>
+  <string name="RegisterTargetHint">Daily Target (you may change that later)</string>
+  <string name="RegisterPwdHint">Password</string>
+  <string name="RegisterPwdVertificationHint">Password Vertification</string>
+  <string name="RegisterBtnText">Register</string>
+  <string name="RegisterWelcomeTitle">Join</string>
+  <string name="RegisterWelcomeText">Create a new account:</string>
+  <string name="RegisterLoginInsteadText">Log in instead</string>
+    <!-- Profile -->
+    <string name="ProfileTitle">Profile</string>
+    <string name="ProfileSaveTargetBtn">Save</string>
+    <string name="ProfileTargetHint">Your Daily Target</string>
+    
 </resources>

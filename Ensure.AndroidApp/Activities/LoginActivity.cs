@@ -43,7 +43,7 @@ namespace Ensure.AndroidApp
         {
 			// Start Register activity
 			var i = new Intent(this, typeof(RegisterActivity));
-			StartActivityForResult(i, (int)ActvityResults.Register);
+			StartActivityForResult(i, (int)ActivityResults.Register);
         }
 
 		private async void LoginBtnClicked(object sender, EventArgs e)
@@ -121,11 +121,27 @@ namespace Ensure.AndroidApp
 			// Prevent user from leaving activity - do nothing.
 		}
 
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            switch ((ActivityResults)requestCode)
+            {
+				case ActivityResults.Register:
+					// if user registerted
+					if (resultCode == Result.Ok)
+                    {
+						Finish();
+                    }
+					break;
+                default:
+                    break;
+            }
+            base.OnActivityResult(requestCode, resultCode, data);
+        }
 
-		/// <summary>
-		/// The Activity Results for the current activity
-		/// </summary>
-		private enum ActvityResults
+        /// <summary>
+        /// The Activity Results for the current activity
+        /// </summary>
+        private enum ActivityResults
 		{
 			Register
 		};

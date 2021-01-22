@@ -71,6 +71,6 @@ namespace Ensure.Web.Controllers
 
 		[Route("[action]")]
 		[HttpGet]
-		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(String.Empty)).Value.Logs.Count;
+		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(string.Empty)).Value.Logs.Count;
 	}
 }

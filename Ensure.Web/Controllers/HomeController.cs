@@ -25,14 +25,16 @@ namespace Ensure.Web.Controllers
 	public class HomeController : Controller
 	{
 		private readonly SignInManager<AppUser> _signInManager;
-		private readonly IEnsureService _ensureService;
+        private readonly IAppUsersService appUsersService;
+        private readonly IEnsureService _ensureService;
 		private readonly UserManager<AppUser> _userManager;
 
-		public HomeController(SignInManager<AppUser> signInManager,
+		public HomeController(SignInManager<AppUser> signInManager, IAppUsersService appUsersService,
 			IEnsureService ensureService, UserManager<AppUser> userManager)
 		{
 			_signInManager = signInManager;
-			_ensureService = ensureService;
+            this.appUsersService = appUsersService;
+            _ensureService = ensureService;
 			_userManager = userManager;
 		}
 
@@ -82,6 +84,7 @@ namespace Ensure.Web.Controllers
         /// </summary>
         /// <returns></returns>
 		[Route("Error")]
+		[AllowAnonymous]
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{
@@ -139,7 +142,7 @@ namespace Ensure.Web.Controllers
 			var res = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, false, false);
 			if (!res.Succeeded)
 			{
-				if (!res.IsLockedOut) ModelState.AddModelError("", "Authentication failed.");
+				ModelState.AddModelError("", "Authentication failed.");
 			}
 			return RedirectToAction("Logs");
 		}
@@ -208,9 +211,7 @@ namespace Ensure.Web.Controllers
 		{
 			if (dailyTarget > 0)
 			{
-				var u = await _userManager.FindByNameAsync(User.Identity.Name);
-				u.DailyTarget = dailyTarget;
-				await _userManager.UpdateAsync(u);
+				await appUsersService.SetUserTarget(dailyTarget, User.Identity.Name);
 				return RedirectToAction("Profile");
 			}
 			return RedirectToAction("Profile");

@@ -7,5 +7,10 @@
         android:text="Logout"
           android:id="@+id/action_logout"
 android:title="Logout"/>
+    <item android:showAsAction="always"
+        android:text="Profile"
+        android:id="@+id/action_profile"
+        android:title="Profile"
+        />
 
 </menu>

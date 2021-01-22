@@ -64,6 +64,8 @@ namespace Ensure.Web
 
             services.AddScoped<ITimeService, TimeService>();
             services.AddScoped<IEnsureService, EnsureService>();
+            services.AddScoped<IAppUsersService, AppUsersService>();
+
 
             services.ConfigureApplicationCookie(cookie =>
             {
