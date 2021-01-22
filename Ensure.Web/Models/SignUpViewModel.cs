@@ -17,7 +17,7 @@ namespace Ensure.Web.Models
 		[Required]
 		[DataType(DataType.Password)]
 		[Display(Name = "Password Vertification")]
-		[Compare(nameof(Password), ErrorMessage = "Password and vertification must match."]
+		[Compare(nameof(Password), ErrorMessage = "Password and vertification must match.")]
 		public string PasswordVertification { get; set; }
 		[Required]
 		[DataType(DataType.EmailAddress)]

@@ -173,7 +173,7 @@ namespace Ensure.Web.Controllers
 				DailyTarget = model.DailyTarget,
 				TimeZone = model.TimeZone,
 			};
-			var res = await _userManager.CreateAsync(u);
+			var res = await _userManager.CreateAsync(u, model.Password);
 			if (res.Succeeded)
             {
 				await _signInManager.SignInAsync(u, false);
