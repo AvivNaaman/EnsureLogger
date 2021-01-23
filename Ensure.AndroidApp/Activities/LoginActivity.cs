@@ -5,6 +5,7 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
@@ -16,122 +17,98 @@ using System.Text;
 
 namespace Ensure.AndroidApp
 {
-	[Activity(Label = "LoginActivity")]
-	public class LoginActivity : Activity
-	{
-		private EditText userNameEt, pwdEt;
-		private Button submitBtn, registerBtn;
-		private ProgressBar topLoadingProgress;
-		protected override void OnCreate(Bundle savedInstanceState)
-		{
-			base.OnCreate(savedInstanceState);
-			SetContentView(Resource.Layout.login_layout);
+    [Activity(Label = "LoginActivity")]
+    public class LoginActivity : Activity
+    {
+        private EditText userNameEt, pwdEt;
+        private Button submitBtn, registerBtn;
+        private ProgressBar topLoadingProgress;
 
-			userNameEt = FindViewById<EditText>(Resource.Id.LoginUserNameEt);
-			pwdEt = FindViewById<EditText>(Resource.Id.LoginPasswordEt);
+        private UserService userService;
 
-			topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.LoginActivityTopProgress);
-
-			submitBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
-			submitBtn.Click += LoginBtnClicked;
-
-			registerBtn = FindViewById<Button>(Resource.Id.LoginRegisterBtn);
-			registerBtn.Click += RegisterBtnClicked;
-		}
-
-		private void RegisterBtnClicked(object sender, EventArgs e)
+        protected override void OnCreate(Bundle savedInstanceState)
         {
-			// Start Register activity
-			var i = new Intent(this, typeof(RegisterActivity));
-			StartActivityForResult(i, (int)ActivityResults.Register);
+            base.OnCreate(savedInstanceState);
+            SetContentView(Resource.Layout.login_layout);
+
+            userService = new UserService(this);
+
+            userNameEt = FindViewById<EditText>(Resource.Id.LoginUserNameEt);
+            pwdEt = FindViewById<EditText>(Resource.Id.LoginPasswordEt);
+
+            topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.LoginActivityTopProgress);
+
+            submitBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
+            submitBtn.Click += LoginBtnClicked;
+
+            registerBtn = FindViewById<Button>(Resource.Id.LoginRegisterBtn);
+            registerBtn.Click += RegisterBtnClicked;
         }
 
-		private async void LoginBtnClicked(object sender, EventArgs e)
-		{
-			Log.Debug("LoginActivity", "btn clicked");
-			string username = userNameEt.Text, pwd = pwdEt.Text;
-			if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
-			{
-				return;
-			}
-			try
-			{
-				SetUiLoadingState(true);
+        /// <summary>
+        /// Starts the register activity
+        /// </summary>
+        private void RegisterBtnClicked(object sender, EventArgs e)
+        {
+            // Start Register activity
+            var i = new Intent(this, typeof(RegisterActivity));
+            StartActivityForResult(i, (int)ActivityResults.Register);
+        }
 
-				// Fetch
-				var http = new HttpHelper(this);
-				var res = await http.GetAsync($"/api/Account/login?username={username}&password={pwd}");
+        /// <summary>
+        /// Validates and logs in the user
+        /// </summary>
+        private async void LoginBtnClicked(object sender, EventArgs e)
+        {
+            string username = userNameEt.Text, pwd = pwdEt.Text;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
+            {
+                return;
+            }
 
-				if (!res.IsSuccessStatusCode)
-				{
-					if (res.StatusCode.HasFlag(System.Net.HttpStatusCode.BadRequest)) // Auth failed
-						throw new AuthenticationException("User name and password do not match.");
-					else throw new AuthenticationException($"Error: Status code {res.StatusCode} does not indicate success.");
-				}
-				string content = await res.Content.ReadAsStringAsync();
-				// Json
-				try
-				{
-					Log.Debug("Login", $"Hello {content} END");
-					var userInfo = JsonConvert.DeserializeObject<ApiUserInfo>(content);
-					// Handle response
-					if (userInfo != null)
-					{
-						// logged in successfully! get back to MainActivity
-						((EnsureApplication)ApplicationContext).UpdateUserInfo(userInfo);
-						SetResult(Result.Ok);
-						Finish();
-						return;
-					}
-					else
-					{
-						throw new AuthenticationException("Authentication failed.");
-					}
+            SetUiLoadingState(true);
+            if (await userService.LogUserIn(username, pwd)) // login successful
+            {
+                SetResult(Result.Ok);
+                Finish();
+            }
+            else // login failed
+            {
+                // Remove Password
+                pwdEt.Text = string.Empty;
+                // Show error alert
+                new AlertDialog.Builder(this)
+                    .SetTitle("Login failed")
+                    .SetMessage("One or more of the credentials were wrong.")
+                    .Create().Show();
+            }
+            SetUiLoadingState(false);
+        }
 
-				}
-				catch (JsonException jEx)
-				{
-					Log.Error("JsonLogin", $"Json Parse failed. response: {content}, message: {jEx.Message}");
-					throw new AuthenticationException("Error: Failed to parse response from server.");
-				}
-			}
-			// something failed
-			catch (AuthenticationException aEx)
-			{
-				// Remove Password
-				pwdEt.Text = String.Empty;
-				// Show error alert
-				var builder = new AlertDialog.Builder(this);
-				builder.SetTitle("Login failed");
-				builder.SetMessage(aEx.Message);
-				builder.SetPositiveButton("OK", (e, sender) => { });
-				builder.Create().Show();
-				SetUiLoadingState(false);
-			}
-		}
+        /// <summary>
+        /// Sets the loading state for the UI
+        /// </summary>
+        /// <param name="isLoading">Should UI indicate loading state</param>
+        private void SetUiLoadingState(bool isLoading)
+        {
+            topLoadingProgress.Indeterminate = isLoading;
+            submitBtn.Clickable = submitBtn.Enabled = submitBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+        }
 
-		private void SetUiLoadingState(bool isLoading)
-		{
-			topLoadingProgress.Indeterminate = isLoading;
-			submitBtn.Clickable = submitBtn.Enabled = submitBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
-		}
-
-		public override void OnBackPressed()
-		{
-			// Prevent user from leaving activity - do nothing.
-		}
+        // just prevent the Finish() call on default
+        public override void OnBackPressed() { }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
         {
             switch ((ActivityResults)requestCode)
             {
-				case ActivityResults.Register:
-					// if user registerted
-					if (resultCode == Result.Ok)
+                case ActivityResults.Register:
+                    // if user registerted succesfully, go home
+                    if (resultCode == Result.Ok)
                     {
-						Finish();
+                        Finish();
                     }
-					break;
+                    break;
                 default:
                     break;
             }
@@ -142,8 +119,8 @@ namespace Ensure.AndroidApp
         /// The Activity Results for the current activity
         /// </summary>
         private enum ActivityResults
-		{
-			Register
-		};
-	}
+        {
+            Register
+        };
+    }
 }

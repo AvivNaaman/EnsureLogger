@@ -10,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp
@@ -21,6 +22,8 @@ namespace Ensure.AndroidApp
         private EditText target;
         private Button saveTargetBtn;
         private ProgressBar topProgress;
+
+        private UserService userService;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -36,27 +39,32 @@ namespace Ensure.AndroidApp
 
             topProgress = FindViewById<ProgressBar>(Resource.Id.ProfileActivityTopProgress);
 
+            userService = new UserService(this);
+
             UpdateFromInfo();
         }
 
         private async void SaveTargetBtn_Click(object sender, EventArgs e)
         {
             SetUiLoadingState(true);
-            int parsedTarget;
-            if (string.IsNullOrWhiteSpace(target.Text) || (parsedTarget = int.Parse(target.Text)) <= 0)
+            short parsedTarget;
+            if (string.IsNullOrWhiteSpace(target.Text) || (parsedTarget = short.Parse(target.Text)) <= 0)
             {
                 ValidationHelpers.ShowErrorDialog("Please enter a valid target.", this);
             }
             else
             {
-                var res = await new HttpHelper(this).PostAsync("/api/Account/SetTarget?target={parsedTarget}");
-                if (!res.IsSuccessStatusCode)
+                try
                 {
-                    // TODO: Make an error
+                    short prevTarget = userService.UserInfo.DailyTarget;
+                    if (!await userService.SetUserTarget(parsedTarget))
+                    {
+                        target.Text = prevTarget.ToString(); // error
+                    }
                 }
-                else
+                catch
                 {
-                    Toast.MakeText(this, "Saved!", ToastLength.Long).Show();
+                    // TODO: Back to login
                 }
             }
             SetUiLoadingState(false);
@@ -64,8 +72,7 @@ namespace Ensure.AndroidApp
 
         private void UpdateFromInfo()
         {
-            var app = (EnsureApplication)Application;
-            var info = app.UserInfo;
+            var info = userService.UserInfo;
             userName.Text = info.UserName;
             email.Text = info.Email;
             target.Text = info.DailyTarget.ToString();
@@ -76,5 +83,6 @@ namespace Ensure.AndroidApp
             topProgress.Indeterminate = isLoading;
             saveTargetBtn.Enabled = target.Enabled = !isLoading;
         }
+
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.Extensions.Configuration;
+using Ensure.Domain.Models;
 
 namespace Ensure.Web.Services
 {
@@ -36,6 +37,24 @@ namespace Ensure.Web.Services
             expires: DateTime.UtcNow.AddYears(1),
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature));
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+        }
+
+        public async Task<ApiUserInfo> GetUserInfo(string userName, string jwtToken)
+        {
+            var u = await _userManager.FindByNameAsync(userName);
+            return GetUserInfo(u, jwtToken);
+        }
+
+        public ApiUserInfo GetUserInfo(AppUser u, string jwtToken)
+        {
+            return new ApiUserInfo()
+            {
+                DailyTarget = u.DailyTarget,
+                Email = u.Email,
+                Id = u.Id,
+                UserName = u.UserName,
+                JwtToken = jwtToken
+            };
         }
 
         public async Task<int> GetUserTarget(string userName) => (await _userManager.FindByNameAsync(userName)).DailyTarget;

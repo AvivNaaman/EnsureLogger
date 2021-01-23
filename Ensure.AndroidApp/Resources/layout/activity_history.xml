@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	<ProgressBar
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+		android:indeterminateOnly="false"
+		android:layout_marginTop="-6dp"
+		android:paddingTop="0dp"
+		tools:ignore="HardcodedSize,NegativeMargin"
+		android:id="@+id/HistoryActivityTopProgress"/>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
+		android:padding="17sp">
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Full History"
+			android:gravity="center"
+			android:textSize="27sp"/>
+
+		<!-- Buttons & Date panel -->
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<Button
+				android:layout_width="0px"
+				android:layout_weight="2"
+				android:layout_height="wrap_content"
+				android:text="Prev day"
+				android:id="@+id/HistoryPrevBtn"/>
+			<TextView
+                android:layout_width="0px"
+				android:layout_weight="3"
+                android:layout_height="match_parent"
+				android:text="dd/MM/YYYY"
+				android:layout_marginHorizontal="10sp"
+				android:gravity="center"
+				android:autoSizeMinTextSize="2sp"
+				android:autoSizeMaxTextSize="100sp"
+				android:autoSizeTextType="uniform"
+				android:autoSizeStepGranularity="1sp"/>
+			<Button
+				android:layout_width="0px"
+				android:layout_weight="2"
+				android:layout_height="wrap_content"
+				android:text="Next Day"
+				android:id="@+id/HistoryNextBtn"/>
+		</LinearLayout>
+
+		<!-- Logs List -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="fill_parent">
+
+				<android.support.v7.widget.RecyclerView
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:id="@+id/EnsuresRv"/>
+			</LinearLayout>
+	</LinearLayout>
+</LinearLayout>

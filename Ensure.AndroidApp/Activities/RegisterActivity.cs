@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -11,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
@@ -24,10 +24,14 @@ namespace Ensure.AndroidApp
         private ProgressBar topLoadingProgress;
         private Button submitBtn, loginInsteadBtn;
         private EditText pwd, pwdVertification, userName, email, target;
+
+        private UserService userService;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_register);
+
+            userService = new UserService(this);
 
             topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.RegisterActivityTopProgress);
 
@@ -47,43 +51,27 @@ namespace Ensure.AndroidApp
 
         private void LoginInsteadBtn_Click(object sender, EventArgs e)
         {
-            // Cancel and go back to login
-            SetResult(Result.Canceled);
-            Finish();
+            OnBackPressed();
         }
 
         private async void SubmitBtn_Click(object sender, EventArgs e)
         {
-            // validate first
             if (!ValidateForm()) return;
 
             SetUiLoadingState(true);
 
-            var model = new ApiSignupModel
+            if (await userService.RegiserUser(userName.Text, email.Text,
+                pwd.Text, pwdVertification.Text, short.Parse(target.Text)))
             {
-                Password = pwd.Text,
-                PasswordVertification = pwdVertification.Text,
-                UserName = userName.Text,
-                Email = email.Text,
-                DailyTarget = short.Parse(target.Text)
-            };
-
-            // Post To Server
-            string data = JsonConvert.SerializeObject(model);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
-            var res = await new HttpHelper(this).PostAsync("/api/Account/Register", content);
-
-            if (!res.IsSuccessStatusCode)
-            {
-                ShowErrorDialog("Registartion failed.", this);
+                SetResult(Result.Ok);
+                Finish();
             }
             else
             {
-                var userInfo = JsonConvert.DeserializeObject<ApiUserInfo>
-                                (await res.Content.ReadAsStringAsync());
-                ((EnsureApplication)Application).UpdateUserInfo(userInfo);
-                SetResult(Result.Ok); // success!
-                Finish();
+                new AlertDialog.Builder(this)
+                    .SetTitle("Register failed")
+                    .SetMessage("One or more of the fiels were invalid.")
+                    .Create().Show();
             }
 
             SetUiLoadingState(false);
@@ -101,6 +89,12 @@ namespace Ensure.AndroidApp
                 pwdVertification.Text, email.Text, target.Text) &&
                 pwd.Text == pwdVertification.Text &&
                 ValidateEmail(email.Text, this) && ValidatePassword(pwd.Text, this);
+        }
+
+        public override void OnBackPressed()
+        {
+            SetResult(Result.Canceled);
+            Finish();
         }
 
         private void SetUiLoadingState(bool isLoading)

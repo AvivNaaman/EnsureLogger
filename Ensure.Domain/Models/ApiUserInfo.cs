@@ -14,5 +14,6 @@ namespace Ensure.Domain.Models
 		public string Email { get; set; }
 		public short DailyTarget { get; set; }
 		public string JwtToken { get; set; }
-	}
+        public string Id { get; set; }
+    }
 }

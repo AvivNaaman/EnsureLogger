@@ -1,6 +1,7 @@
 ﻿using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Data;
 using Ensure.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,12 @@ namespace Ensure.AndroidApp.Adapters
 {
 	public class EnsureRecyclerAdapter : RecyclerView.Adapter
 	{
-		public List<EnsureLog> Items { get; set; }
+		public List<InternalEnsureLog> Items { get; set; }
 
 		public event EventHandler<EnsureRecyclerAdapterClickEventArgs> ItemClick;
 		public event EventHandler<EnsureRecyclerAdapterClickEventArgs> ItemLongClick;
 
-		public EnsureRecyclerAdapter(List<EnsureLog> data)
+		public EnsureRecyclerAdapter(List<InternalEnsureLog> data)
 		{
 			Items = data;
 		}
@@ -51,7 +52,6 @@ namespace Ensure.AndroidApp.Adapters
 
 	public class EnsureRecyclerAdapterViewHolder : RecyclerView.ViewHolder
 	{
-		//public TextView TextView { get; set; }
 		public TextView DateLoggedTv { get; set; }
 		public TextView TasteTv { get; set; }
 		public string LogId { get; set; }

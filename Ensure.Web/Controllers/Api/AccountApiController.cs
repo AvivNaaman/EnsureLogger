@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace Ensure.Web.Controllers
 {
     [Route("api/Account")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Bearer - Web API Auth
     [ApiController]
     public class AccountApiController : ControllerBase
     {
@@ -34,7 +34,14 @@ namespace Ensure.Web.Controllers
             this.appUsersService = appUsersService;
         }
 
-        [AcceptVerbs("POST", "GET")]
+        [HttpGet]
+        [Route("GetInfo")]
+        public async Task<ActionResult<ApiUserInfo>> GetInfo()
+        {
+            return await appUsersService.GetUserInfo(User.Identity.Name, null);
+        }
+
+        [HttpGet]
         [AllowAnonymous]
         [Route("Login")]
         public async Task<ActionResult<ApiUserInfo>> Login(string username, string password)
@@ -43,14 +50,7 @@ namespace Ensure.Web.Controllers
             if (await _userManager.CheckPasswordAsync(u, password))
             {
                 string jwtToken = appUsersService.GenerateBearerToken(u);
-                var info = new ApiUserInfo()
-                {
-                    Email = u.Email,
-                    UserName = u.UserName,
-                    DailyTarget = u.DailyTarget,
-                    JwtToken = jwtToken,
-                };
-                return info;
+                return appUsersService.GetUserInfo(u, jwtToken);
             }
             else
             {
@@ -58,6 +58,7 @@ namespace Ensure.Web.Controllers
             }
         }
 
+        [Obsolete("Should be replaces by GetInfo")]
         [Route("GetTarget")]
         [HttpGet]
         public async Task<ActionResult<int>> GetTarget()
