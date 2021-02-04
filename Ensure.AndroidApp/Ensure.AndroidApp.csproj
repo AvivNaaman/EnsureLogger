@@ -90,11 +90,12 @@
     <Compile Include="Activities\RegisterActivity.cs" />
     <Compile Include="Helpers\ValidationHelpers.cs" />
     <Compile Include="Activities\ProfileActivity.cs" />
-    <Compile Include="Data\EnsureService.cs" />
+    <Compile Include="Data\EnsureRepository.cs" />
     <Compile Include="Data\InternalEnsureLog.cs" />
     <Compile Include="Data\UserService.cs" />
-    <Compile Include="Data\BaseOnlineService.cs" />
+    <Compile Include="Data\BaseRepository.cs" />
     <Compile Include="Activities\HistoryActivity.cs" />
+    <Compile Include="BroadcastReceivers\NetStateReceiver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -146,7 +147,7 @@
   <ItemGroup>
     <Folder Include="Resources\drawable\" />
     <Folder Include="Data\" />
-    <Folder Include="Exceptions\" />
+    <Folder Include="BroadcastReceivers\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
@@ -161,7 +162,7 @@
     <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView">
       <Version>28.0.0.3</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Essentials" Version="1.6.0" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="sqlite-net-pcl">
       <Version>1.7.335</Version>
     </PackageReference>

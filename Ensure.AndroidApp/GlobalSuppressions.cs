@@ -5,4 +5,3 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:Ensure.AndroidApp.MainActivity.ChangeDateBtn_Clicked(System.Object,System.EventArgs,System.Int16)~System.Threading.Tasks.Task")]

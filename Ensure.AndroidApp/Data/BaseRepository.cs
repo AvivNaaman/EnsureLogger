@@ -5,12 +5,26 @@ using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp.Data
 {
-    public abstract class BaseOnlineService
+    /// <summary>
+    /// A base class for an online service, including HTTP helper
+    /// and Context protected properties
+    /// </summary>
+    public abstract class BaseService
     {
+        /// <summary>
+        /// The current Android context
+        /// </summary>
         private protected readonly Context context;
+        /// <summary>
+        /// A helper class for handling HTTP Requests
+        /// </summary>
         private protected readonly HttpHelper http;
 
-        public BaseOnlineService(Context context)
+        /// <summary>
+        /// Constructs the service and initailizes the HTTP helper.
+        /// </summary>
+        /// <param name="context"></param>
+        public BaseService(Context context)
         {
             this.context = context;
             this.http = new HttpHelper(context);

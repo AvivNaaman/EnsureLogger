@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Ensure.Web.Controllers
@@ -31,14 +32,25 @@ namespace Ensure.Web.Controllers
 			_timeService = timeService;
 		}
 
-		[Route("[action]")]
+		/// <summary>
+        /// Logs a new ensure with the specified taste for the current user.
+        /// </summary>
+        /// <param name="taste">The ensure taste (as query string)</param>
+        /// <returns>The newly created log</returns>
+		[Route("AddLog")]
 		[HttpPost]
 		public async Task<ActionResult<EnsureLog>> AddLog(EnsureTaste taste)
 		{
 			return await _ensureService.LogAsync(User.Identity.Name, taste);
 		}
 
-		[Route("[action]")]
+		[Route("AddBulk")]
+		public async Task<ActionResult<List<EnsureLog>>> AddBulk([FromForm] List<EnsureLog> logs)
+        {
+			return await _ensureService.LogBulkAsync(User.Identity.Name, logs);
+        }
+
+		[Route("RemoveLog")]
 		[HttpPost]
 		public async Task<ActionResult> RemoveLog(string id)
 		{
@@ -51,7 +63,7 @@ namespace Ensure.Web.Controllers
 			else return BadRequest();
 		}
 
-		[Route("[action]")]
+		[Route("GetLogs")]
 		[HttpGet]
 		public async Task<ActionResult<ApiEnsuresList>> GetLogs(string date)
 		{
@@ -69,7 +81,8 @@ namespace Ensure.Web.Controllers
 			return new ApiEnsuresList { CurrentReturnedDate = d, Logs = el };
 		}
 
-		[Route("[action]")]
+		[Obsolete]
+		[Route("TodayProgress")]
 		[HttpGet]
 		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(string.Empty)).Value.Logs.Count;
 	}

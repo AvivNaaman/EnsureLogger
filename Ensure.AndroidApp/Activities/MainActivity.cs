@@ -21,6 +21,7 @@ using Android.Views;
 using Ensure.Domain;
 using Ensure.Domain.Models;
 using Ensure.AndroidApp.Data;
+using Ensure.AndroidApp.BroadcastReceivers;
 
 namespace Ensure.AndroidApp
 {
@@ -36,7 +37,7 @@ namespace Ensure.AndroidApp
 
         private TextView helloUserTv;
 
-        private EnsureService ensureService;
+        private EnsureRepository ensureService;
         private UserService userService;
 
         private ProgressBar todayProgress;
@@ -45,6 +46,9 @@ namespace Ensure.AndroidApp
         private DateTime currDisplayedDate = DateTime.MinValue;
 
         private int currentProgress;
+
+        private NetStateReceiver netStateReceiver;
+
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -79,12 +83,18 @@ namespace Ensure.AndroidApp
 
         }
 
+        /// <summary>
+        /// Swipe refresh event handler
+        /// </summary>
         private async void MainActivity_Refresh(object sender, EventArgs e)
         {
             await RefreshTargetProgress();
             refreshLayout.Refreshing = false;
         }
 
+        /// <summary>
+        /// Add button event handler
+        /// </summary>
         private async void AddBtn_Click(object sender, EventArgs e)
         {
             SetUiLoadingState(true);
@@ -120,6 +130,9 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(false);
         }
 
+        /// <summary>
+        /// Updates the target and the progress of today 
+        /// </summary>
         private void UpdateTargetUi()
         {
             todayProgressTv.Text = currentProgress + "/" + userService.UserInfo.DailyTarget;
@@ -127,18 +140,26 @@ namespace Ensure.AndroidApp
             todayProgress.Max = userService.UserInfo.DailyTarget;
         }
 
+        /// <summary>
+        /// Starts the login activity
+        /// </summary>
         private void StartLoginActivity()
         {
             var intent = new Intent(this, typeof(LoginActivity));
             StartActivityForResult(intent, (int)ActivityRequestCodes.Login);
         }
 
+        /// <summary>
+        /// Changed the UI to match the loading state
+        /// </summary>
+        /// <param name="isLoading"></param>
         private void SetUiLoadingState(bool isLoading)
         {
             horizontalTopProgress.Indeterminate = isLoading; // "disabled"
             refreshLayout.Enabled = addBtn.Enabled = !isLoading;
         }
 
+        /* Options Menu */
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             MenuInflater.Inflate(Resource.Menu.main_menu, menu);
@@ -163,6 +184,9 @@ namespace Ensure.AndroidApp
             return base.OnOptionsItemSelected(item);
         }
 
+        /// <summary>
+        /// Logs the user out and turns him to the login
+        /// </summary>
         private void Logout()
         {
             SetUiLoadingState(true);
@@ -175,14 +199,21 @@ namespace Ensure.AndroidApp
 
         protected override void OnResume()
         {
-            ensureService = new EnsureService(this);
+            // init services & load data
+            ensureService = new EnsureRepository(this);
             userService = new UserService(this);
-            userService.UpdateUserInfoFromSp();
+            userService.LoadUserInfoFromSp();
+
+            // register network broadcast receiver
+            netStateReceiver = new NetStateReceiver();
+            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
+            IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
+            RegisterReceiver(netStateReceiver, netFilter);
+
             base.OnStart();
             if (userService.IsLoggedIn)
             {
                 helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
-                _ = RefreshTargetProgress();
             }
             else
             {
@@ -190,10 +221,34 @@ namespace Ensure.AndroidApp
             }
         }
 
+        /// <summary>
+        /// Network state changes event handler
+        /// </summary>
+        /// <param name="isNetConnected"></param>
+        private async void NetworkStateChanged(bool isNetConnected, bool prevState)
+        {
+            if (prevState != isNetConnected) // connectivity (connected/not connected) changed
+            {
+                Toast.MakeText(this, "Net available? " + isNetConnected, ToastLength.Long).Show();
+                if (isNetConnected) // offline -> online: SYNC!
+                {
+                    SetUiLoadingState(true);
+                    await ensureService.SyncEnsures();
+                    await RefreshTargetProgress();
+                    SetUiLoadingState(false);
+                }
+                else // online -> offline
+                {
+
+                }
+            }
+        }
+
         protected override void OnPause()
         {
             ensureService.Dispose();
             ensureService = null;
+            UnregisterReceiver(netStateReceiver);
             base.OnStop();
         }
 

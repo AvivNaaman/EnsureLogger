@@ -44,8 +44,6 @@ namespace Ensure.AndroidApp.Activities
             // Touch helper (to handle item swipes)
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
             itemTouchHelper.AttachToRecyclerView(logsRv);
-
-
         }
 
         private void SetUiLoadingState(bool isLoading) { }

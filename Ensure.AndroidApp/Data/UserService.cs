@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Ensure.AndroidApp.Data
 {
-    public class UserService : BaseOnlineService
+    public class UserService : BaseService
     {
 
         const string SharedPrefernceName = "EnsureSp";
@@ -67,7 +67,7 @@ namespace Ensure.AndroidApp.Data
         /// <summary>
         /// Loads the user info that is stored in the SharedPreferences
         /// </summary>
-        public void UpdateUserInfoFromSp()
+        public void LoadUserInfoFromSp()
         {
             var userInfoJson = sharedPreferences.GetString(UserInfoSharedPreference, String.Empty);
             if (!string.IsNullOrEmpty(userInfoJson))
@@ -109,6 +109,7 @@ namespace Ensure.AndroidApp.Data
             var info = JsonConvert.DeserializeObject<ApiUserInfo>(await res.Content.ReadAsStringAsync());
             info.JwtToken = application.UserInfo.JwtToken;
             application.UserInfo = info;
+            SaveUserInfoToSp(); // save updated info locally
             return info;
         }
 
@@ -130,6 +131,8 @@ namespace Ensure.AndroidApp.Data
                     HandleHttpError(res);
                     return false;
                 }
+                UserInfo.DailyTarget = target;
+                SaveUserInfoToSp(); // save updates locally
                 return true;
             }
             return false;

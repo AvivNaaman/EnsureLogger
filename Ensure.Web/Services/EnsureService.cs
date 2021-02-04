@@ -2,6 +2,7 @@
 using Ensure.Domain.Enums;
 using Ensure.Web.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -65,5 +66,10 @@ namespace Ensure.Web.Services
 			_dbContext.Remove(log);
 			await _dbContext.SaveChangesAsync();
 		}
-	}
+
+        public Task<ActionResult<List<EnsureLog>>> LogBulkAsync(string userName, List<EnsureLog> logs)
+        {
+			return null; // TODO: Implement
+        }
+    }
 }

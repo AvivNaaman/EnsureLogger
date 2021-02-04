@@ -17,15 +17,25 @@ using SQLite;
 namespace Ensure.AndroidApp.Data
 {
     /// <summary>
-    /// A Helper class for fetching and caching ensure logs
+    /// A synced respository for ensure logs
     /// </summary>
-    public class EnsureService : BaseOnlineService, IDisposable
+    public class EnsureRepository : BaseService, IDisposable
     {
+        /// <summary>
+        /// The SQLite3 database name
+        /// </summary>
         const string DBName = "EnsureStore.db";
 
+        /// <summary>
+        /// The currently opened SQLite connection
+        /// </summary>
         private readonly SQLiteAsyncConnection db;
 
-        public EnsureService(Context context) : base(context)
+        /// <summary>
+        /// Constructs a new repository.
+        /// </summary>
+        /// <param name="context"></param>
+        public EnsureRepository(Context context) : base(context)
         {
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Personal))) Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Personal));
@@ -51,29 +61,40 @@ namespace Ensure.AndroidApp.Data
                     return null;
                 }
                 var ensuresList = JsonConvert.DeserializeObject<ApiEnsuresList>(await res.Content.ReadAsStringAsync());
-                var ensures = ensuresList.Logs.Select(l => new InternalEnsureLog
+
+                // convert all EnsureLogs from server to InternalEnsureLogs for database
+                var ensures = ensuresList.Logs.Select(e => new InternalEnsureLog
                 {
-                    EnsureTaste = l.EnsureTaste,
-                    Id = l.Id,
-                    IsSynced = true,
-                    Logged = l.Logged.Date,
-                    UserId = l.UserId
+                    Id = e.Id,
+                    EnsureTaste = e.EnsureTaste,
+                    UserId = e.UserId,
+                    Logged = e.Logged,
+                    IsSynced = true
                 }).ToList();
 
                 // cache all (delete old that are already there & insert the new ones):
                 var day = ensuresList.CurrentReturnedDate.Date;
-                await db.ExecuteAsync("DELETE from EnsureLogs WHERE Logged < ? AND ? <= Logged", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
+                await db.ExecuteAsync("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
                 await db.InsertAllAsync(ensures);
-                return ensures;
 
+                return ensures;
             }
             else // if there is no internet, pull from cache:
             {
                 // first in is on top (desc order)
-                var ensures = await db.Table<InternalEnsureLog>()
-                    .Where(l => l.Logged.Date == date.Date)
-                    .OrderByDescending(l => l.Logged).ToListAsync();
-                return ensures;
+                date = date == DateTime.MinValue ? DateTime.Today : date;
+                try
+                {
+                    // query all between date & day after it
+                    var ensures = await db.QueryAsync<InternalEnsureLog>(
+                        "SELECT * FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;",
+                        date.AddDays(1).Ticks.ToString(), date.Ticks.ToString());
+                    return ensures;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             }
         }
 
@@ -130,11 +151,14 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         public async Task SyncEnsures()
         {
+            // TODO: Add Bulk insertion support on server side!
             if (IsInternetConnectionAvailable())
             {
+                // query all unsynced on local db
                 var toPush = await db.Table<InternalEnsureLog>()
-                    .Where(l => !l.IsSynced).ToListAsync();
+                    .Where(l => l.IsSynced != true).ToListAsync();
 
+                // post each
                 foreach (var log in toPush)
                 {
                     // push to server as new
@@ -144,7 +168,7 @@ namespace Ensure.AndroidApp.Data
                         HandleHttpError(res);
                         continue;
                     }
-                    var newLog = (InternalEnsureLog)JsonConvert.DeserializeObject<EnsureLog>(await res.Content.ReadAsStringAsync());
+                    var newLog = JsonConvert.DeserializeObject<InternalEnsureLog>(await res.Content.ReadAsStringAsync());
                     // replace old cached with new fetched to avoid duplicates
                     await db.DeleteAsync(log);
                     await db.InsertAsync(newLog);
