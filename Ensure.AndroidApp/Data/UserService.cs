@@ -113,9 +113,10 @@ namespace Ensure.AndroidApp.Data
             return info;
         }
 
-        public bool IsLoggedIn => application.IsLoggedIn;
+        public bool IsLoggedIn => UserInfo != null;
         public ApiUserInfo UserInfo => application.UserInfo;
 
+        [Obsolete]
         /// <summary>
         /// Sets and syncs the user's daily target
         /// </summary>

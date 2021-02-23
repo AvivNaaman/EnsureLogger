@@ -17,7 +17,7 @@ using System.Text;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "LoginActivity")]
+    [Activity(Label = "Login")]
     public class LoginActivity : Activity
     {
         private EditText userNameEt, pwdEt;

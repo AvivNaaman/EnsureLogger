@@ -8,6 +8,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Data;
@@ -18,8 +19,8 @@ using static Ensure.AndroidApp.Helpers.ValidationHelpers;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "RegisterActivity")]
-    public class RegisterActivity : Activity
+    [Activity(Label = "Join Us")]
+    public class RegisterActivity : AppCompatActivity
     {
         private ProgressBar topLoadingProgress;
         private Button submitBtn, loginInsteadBtn;
@@ -47,8 +48,11 @@ namespace Ensure.AndroidApp
             userName = FindViewById<EditText>(Resource.Id.RegisterUserNameEt);
             email = FindViewById<EditText>(Resource.Id.RegisterEmailEt);
             target = FindViewById<EditText>(Resource.Id.RegisterTargetEt);
+
+            SupportActionBar.SetDisplayHomeAsUpEnabled(true);
         }
 
+        // TODO: Remove login instead button!
         private void LoginInsteadBtn_Click(object sender, EventArgs e)
         {
             OnBackPressed();
@@ -68,7 +72,7 @@ namespace Ensure.AndroidApp
             }
             else
             {
-                new AlertDialog.Builder(this)
+                new Android.Support.V7.App.AlertDialog.Builder(this)
                     .SetTitle("Register failed")
                     .SetMessage("One or more of the fiels were invalid.")
                     .Create().Show();
@@ -91,10 +95,17 @@ namespace Ensure.AndroidApp
                 ValidateEmail(email.Text, this) && ValidatePassword(pwd.Text, this);
         }
 
-        public override void OnBackPressed()
+        public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            SetResult(Result.Canceled);
-            Finish();
+            switch (item.ItemId)
+            {
+                case Android.Resource.Id.Home:
+                    SetResult(Result.Canceled);
+                    Finish();
+                    return true;
+                default:
+                    return base.OnOptionsItemSelected(item);
+            }
         }
 
         private void SetUiLoadingState(bool isLoading)

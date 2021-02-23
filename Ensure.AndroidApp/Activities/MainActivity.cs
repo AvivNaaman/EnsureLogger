@@ -28,6 +28,7 @@ namespace Ensure.AndroidApp
     [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
+        // TODO: Move to smart props!
         private List<InternalEnsureLog> ensures = new List<InternalEnsureLog>();
 
         private ProgressBar horizontalTopProgress;
@@ -43,17 +44,16 @@ namespace Ensure.AndroidApp
         private ProgressBar todayProgress;
         private TextView todayProgressTv;
 
-        private DateTime currDisplayedDate = DateTime.MinValue;
-
         private int currentProgress;
 
         private NetStateReceiver netStateReceiver;
 
-        protected override async void OnCreate(Bundle savedInstanceState)
+        private ImageButton historyBtn, profileBtn;
+
+        protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
@@ -65,7 +65,7 @@ namespace Ensure.AndroidApp
             // Taste picker
             tasteSpinner = FindViewById<Spinner>(Resource.Id.EnsureTasteSpinner);
             var tastesList = Enum.GetValues(typeof(EnsureTaste)).Cast<EnsureTaste>().ToList();
-            tasteSpinner.Adapter = new ArrayAdapter<EnsureTaste>(this, Android.Resource.Layout.SimpleListItem1, tastesList);
+            tasteSpinner.Adapter = new EnsureTasteSpinnerAdapter(this, tastesList);
 
             // Add button
             addBtn = FindViewById<Button>(Resource.Id.addBtn);
@@ -81,6 +81,23 @@ namespace Ensure.AndroidApp
             todayProgress = FindViewById<ProgressBar>(Resource.Id.TodayProgressBar);
             todayProgressTv = FindViewById<TextView>(Resource.Id.MainProgressTv);
 
+            historyBtn = FindViewById<ImageButton>(Resource.Id.HistoryImageBtn);
+            historyBtn.Click += HistoryBtn_Click;
+            profileBtn = FindViewById<ImageButton>(Resource.Id.ProfileImageBtn);
+            profileBtn.Click += ProfileBtn_Click;
+
+        }
+
+        private void ProfileBtn_Click(object sender, EventArgs e)
+        {
+            Intent i = new Intent(this, typeof(ProfileActivity));
+            StartActivity(i);
+        }
+
+        private void HistoryBtn_Click(object sender, EventArgs e)
+        {
+            Intent i = new Intent(this, typeof(HistoryActivity));
+            StartActivity(i);
         }
 
         /// <summary>
@@ -124,10 +141,10 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(true);
             // refresh today's logs (+history)
             var logs = await ensureService.GetLogs(DateTime.MinValue);
-            var info = await userService.RefreshInfo();
+            await userService.RefreshInfo();
             currentProgress = logs.Count;
             UpdateTargetUi();
-            SetUiLoadingState(false);
+            SetUiLoadingState(false); return;
         }
 
         /// <summary>
@@ -135,9 +152,11 @@ namespace Ensure.AndroidApp
         /// </summary>
         private void UpdateTargetUi()
         {
-            todayProgressTv.Text = currentProgress + "/" + userService.UserInfo.DailyTarget;
+            var target = userService?.UserInfo?.DailyTarget;
+            if (!target.HasValue || target < 0) target = 0;
+            todayProgressTv.Text = currentProgress + "/" + target.Value;
             todayProgress.Progress = currentProgress;
-            todayProgress.Max = userService.UserInfo.DailyTarget;
+            todayProgress.Max = target.Value;
         }
 
         /// <summary>
@@ -174,10 +193,6 @@ namespace Ensure.AndroidApp
                 case Resource.Id.action_logout:
                     Logout();
                     break;
-                case Resource.Id.action_profile:
-                    Intent i = new Intent(this, typeof(ProfileActivity));
-                    StartActivity(i);
-                    break;
                 default:
                     break;
             }
@@ -206,19 +221,22 @@ namespace Ensure.AndroidApp
 
             // register network broadcast receiver
             netStateReceiver = new NetStateReceiver();
-            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
+            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             RegisterReceiver(netStateReceiver, netFilter);
+            base.OnResume();
 
-            base.OnStart();
             if (userService.IsLoggedIn)
             {
                 helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
+                netStateReceiver.NetworkStateChanged -= NetworkStateChanged;
+                netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             }
             else
             {
                 StartLoginActivity();
             }
+            UpdateTargetUi();
         }
 
         /// <summary>
@@ -229,7 +247,6 @@ namespace Ensure.AndroidApp
         {
             if (prevState != isNetConnected) // connectivity (connected/not connected) changed
             {
-                Toast.MakeText(this, "Net available? " + isNetConnected, ToastLength.Long).Show();
                 if (isNetConnected) // offline -> online: SYNC!
                 {
                     SetUiLoadingState(true);
@@ -246,10 +263,10 @@ namespace Ensure.AndroidApp
 
         protected override void OnPause()
         {
-            ensureService.Dispose();
-            ensureService = null;
             UnregisterReceiver(netStateReceiver);
-            base.OnStop();
+            netStateReceiver.Dispose();
+            netStateReceiver = null;
+            base.OnPause();
         }
 
         enum ActivityRequestCodes

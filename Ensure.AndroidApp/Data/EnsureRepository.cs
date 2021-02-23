@@ -19,7 +19,7 @@ namespace Ensure.AndroidApp.Data
     /// <summary>
     /// A synced respository for ensure logs
     /// </summary>
-    public class EnsureRepository : BaseService, IDisposable
+    public class EnsureRepository : BaseService
     {
         /// <summary>
         /// The SQLite3 database name
@@ -29,7 +29,7 @@ namespace Ensure.AndroidApp.Data
         /// <summary>
         /// The currently opened SQLite connection
         /// </summary>
-        private readonly SQLiteAsyncConnection db;
+        private SQLiteAsyncConnection db;
 
         /// <summary>
         /// Constructs a new repository.
@@ -37,10 +37,19 @@ namespace Ensure.AndroidApp.Data
         /// <param name="context"></param>
         public EnsureRepository(Context context) : base(context)
         {
+        }
+
+        private async Task OpenDbConnection()
+        {
             string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Personal))) Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Personal));
             db = new SQLiteAsyncConnection(path);
-            db.CreateTableAsync<InternalEnsureLog>().Wait();
+            await db.CreateTableAsync<InternalEnsureLog>();
+        }
+
+        private async Task CloseDbConnection()
+        {
+            await db.CloseAsync();
         }
 
         /// <summary>
@@ -49,9 +58,11 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         /// <param name="date">The logged date</param>
         /// <returns>A list of logs logged in date</returns>
-        public async Task<List<InternalEnsureLog>> GetLogs(DateTime date)
+        public async Task<List<InternalEnsureLog>> GetLogs(DateTime date, bool forceCache = false)
         {
-            if (IsInternetConnectionAvailable()) // if there's internet, fetch & update cache:
+            List<InternalEnsureLog> ensures;
+            await OpenDbConnection();
+            if (IsInternetConnectionAvailable() && !forceCache) // if there's internet AND not forcing cache, fetch & update cache:
             {
                 string dateQuery = date > DateTime.MinValue ? date.ToString(EnsureConstants.DateTimeUrlFormat) : string.Empty;
                 var res = await http.GetAsync($"/api/Ensure/GetLogs?date={dateQuery}");
@@ -63,7 +74,7 @@ namespace Ensure.AndroidApp.Data
                 var ensuresList = JsonConvert.DeserializeObject<ApiEnsuresList>(await res.Content.ReadAsStringAsync());
 
                 // convert all EnsureLogs from server to InternalEnsureLogs for database
-                var ensures = ensuresList.Logs.Select(e => new InternalEnsureLog
+                ensures = ensuresList.Logs.Select(e => new InternalEnsureLog
                 {
                     Id = e.Id,
                     EnsureTaste = e.EnsureTaste,
@@ -76,26 +87,20 @@ namespace Ensure.AndroidApp.Data
                 var day = ensuresList.CurrentReturnedDate.Date;
                 await db.ExecuteAsync("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
                 await db.InsertAllAsync(ensures);
+                await CloseDbConnection();
 
-                return ensures;
             }
             else // if there is no internet, pull from cache:
             {
                 // first in is on top (desc order)
                 date = date == DateTime.MinValue ? DateTime.Today : date;
-                try
-                {
-                    // query all between date & day after it
-                    var ensures = await db.QueryAsync<InternalEnsureLog>(
-                        "SELECT * FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;",
-                        date.AddDays(1).Ticks.ToString(), date.Ticks.ToString());
-                    return ensures;
-                }
-                catch (Exception e)
-                {
-                    return null;
-                }
+                // query all between date & day after it
+                ensures = await db.QueryAsync<InternalEnsureLog>(
+                    "SELECT * FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;",
+                    date.AddDays(1).Ticks.ToString(), date.Ticks.ToString());
             }
+            await CloseDbConnection();
+            return ensures;
         }
 
         /// <summary>
@@ -132,12 +137,15 @@ namespace Ensure.AndroidApp.Data
                     UserId = ((EnsureApplication)context.ApplicationContext).UserInfo.Id
                 };
             }
+            await OpenDbConnection();
             await db.InsertAsync(log);
+            await CloseDbConnection();
             return log;
         }
 
         private void HandleHttpError(HttpResponseMessage message)
         {
+            // TODO: Make it more logical!
             // if unauthorized (=authentication is required), go to login page.
             if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -154,6 +162,7 @@ namespace Ensure.AndroidApp.Data
             // TODO: Add Bulk insertion support on server side!
             if (IsInternetConnectionAvailable())
             {
+                await OpenDbConnection();
                 // query all unsynced on local db
                 var toPush = await db.Table<InternalEnsureLog>()
                     .Where(l => l.IsSynced != true).ToListAsync();
@@ -173,17 +182,18 @@ namespace Ensure.AndroidApp.Data
                     await db.DeleteAsync(log);
                     await db.InsertAsync(newLog);
                 }
+                await CloseDbConnection();
             }
         }
 
         /// <summary>
         /// Clears all the local ensures cache
         /// </summary>
-        public Task ClearAllCache() => db.Table<InternalEnsureLog>().DeleteAsync();
-
-        public void Dispose()
+        public async Task ClearAllCache()
         {
-            db.CloseAsync();
+            await OpenDbConnection();
+            await db.Table<InternalEnsureLog>().DeleteAsync();
+            await CloseDbConnection();
         }
     }
 }

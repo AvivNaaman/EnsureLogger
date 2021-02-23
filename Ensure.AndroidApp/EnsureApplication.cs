@@ -18,9 +18,6 @@ namespace Ensure.AndroidApp
 	class EnsureApplication : Application
 	{
 		public ApiUserInfo UserInfo { get; set; }
-		public bool IsLoggedIn => UserInfo != null;
-
-		private ISharedPreferences _sharedPreferences;
 		public EnsureApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}

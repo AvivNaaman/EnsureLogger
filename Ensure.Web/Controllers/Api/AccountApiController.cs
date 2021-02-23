@@ -44,17 +44,17 @@ namespace Ensure.Web.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route("Login")]
-        public async Task<ActionResult<ApiUserInfo>> Login(string username, string password)
+        public async Task<ActionResult<ApiResponse<ApiUserInfo>>> Login(string username, string password)
         {
             var u = await _userManager.FindByNameAsync(username);
             if (await _userManager.CheckPasswordAsync(u, password))
             {
                 string jwtToken = appUsersService.GenerateBearerToken(u);
-                return appUsersService.GetUserInfo(u, jwtToken);
+                return new ApiResponse<ApiUserInfo>(appUsersService.GetUserInfo(u, jwtToken));
             }
             else
             {
-                return BadRequest();
+                return BadRequest(new ApiResponse<ApiUserInfo>("User Name and Password do not match any user."));
             }
         }
 
@@ -68,16 +68,16 @@ namespace Ensure.Web.Controllers
 
         [Route("SetTarget")]
         [HttpPost]
-        public async Task<ActionResult> SetTarget(short target)
+        public async Task<ActionResult<ApiResponse>> SetTarget(short target)
         {
             await appUsersService.SetUserTarget(target, User.Identity.Name);
-            return Ok();
+            return new ApiResponse();
         }
 
         [Route("Register")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<ApiUserInfo>> Register(SignUpViewModel model)
+        public async Task<ActionResult<ApiResponse<ApiUserInfo>>> Register(SignUpViewModel model)
         {
             if (!ModelState.IsValid) return BadRequest();
             AppUser u = new()
@@ -92,7 +92,7 @@ namespace Ensure.Web.Controllers
             {
                 return await Login(model.UserName, model.Password);
             }
-            else return BadRequest();
+            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join('\n', res.Errors.Select(ie => ie.Description))));
         }
     }
 }

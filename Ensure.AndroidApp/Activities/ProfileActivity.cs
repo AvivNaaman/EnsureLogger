@@ -8,6 +8,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Data;
@@ -15,8 +16,8 @@ using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "ProfileActivity")]
-    public class ProfileActivity : Activity
+    [Activity(Label = "Profile & Account")]
+    public class ProfileActivity : AppCompatActivity
     {
         private TextView userName, email;
         private EditText target;
@@ -40,6 +41,8 @@ namespace Ensure.AndroidApp
             topProgress = FindViewById<ProgressBar>(Resource.Id.ProfileActivityTopProgress);
 
             userService = new UserService(this);
+
+            SupportActionBar.SetDisplayHomeAsUpEnabled(true);
 
             UpdateFromInfo();
         }
@@ -84,5 +87,18 @@ namespace Ensure.AndroidApp
             saveTargetBtn.Enabled = target.Enabled = !isLoading;
         }
 
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            switch (item.ItemId)
+            {
+                case Android.Resource.Id.Home:
+                    SetResult(Result.Canceled);
+                    Finish();
+                    return true;
+                default:
+                    return base.OnOptionsItemSelected(item);
+            }
+        }
     }
 }

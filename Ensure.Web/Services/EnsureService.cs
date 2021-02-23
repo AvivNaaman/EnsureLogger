@@ -67,9 +67,17 @@ namespace Ensure.Web.Services
 			await _dbContext.SaveChangesAsync();
 		}
 
-        public Task<ActionResult<List<EnsureLog>>> LogBulkAsync(string userName, List<EnsureLog> logs)
-        {
-			return null; // TODO: Implement
-        }
+        public async Task<ActionResult<List<EnsureLog>>> LogBulkAsync(string userName, List<EnsureLog> logs)
+		{
+			var u = await _userManager.FindByNameAsync(userName);
+
+			// add all with fresh GUIDs
+			var newList = logs.Select(l => new EnsureLog(l)).ToList();
+
+			_dbContext.Logs.AddRange(newList);
+			await _dbContext.SaveChangesAsync();
+
+			return newList;
+		}
     }
 }

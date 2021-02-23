@@ -25,12 +25,17 @@ namespace Ensure.AndroidApp.Helpers
 
 		public HttpClient BuildClient()
 		{
-
-			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
 			var app = ((EnsureApplication)context.ApplicationContext);
+			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
+			// set base address
+			client.BaseAddress = BaseUrl;
+			// accept json only
+			client.DefaultRequestHeaders.Accept.Clear();
+			client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+			// set auth header if user logged in
 			if (app.UserInfo != null)
 			{
-				var bearerToken = app.UserInfo.JwtToken;
+				var bearerToken = app.UserInfo.JwtToken; // get token
 				client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", bearerToken);
 			}
 			return client;
@@ -38,7 +43,7 @@ namespace Ensure.AndroidApp.Helpers
 
 		public Task<HttpResponseMessage> GetAsync(string realtiveUrl)
 		{
-			return BuildClient().GetAsync(new Uri(BaseUrl, realtiveUrl));
+			return BuildClient().GetAsync(realtiveUrl);
 		}
 
 		public Task<HttpResponseMessage> PostAsync(string realtiveUrl)
@@ -48,7 +53,7 @@ namespace Ensure.AndroidApp.Helpers
 
 		public Task<HttpResponseMessage> PostAsync(string realtiveUrl, HttpContent content)
 		{
-			return BuildClient().PostAsync(new Uri(BaseUrl, realtiveUrl), content);
+			return BuildClient().PostAsync(realtiveUrl, content);
 		}
 	}
 }
