@@ -15,6 +15,6 @@ namespace Ensure.AndroidApp.Data
         /// <summary>
         /// Whether the log is synced with server
         /// </summary>
-        public bool IsSynced { get; set; }
+        public EnsureSyncState SyncState { get; set; }
     }
 }

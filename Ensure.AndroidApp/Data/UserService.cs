@@ -30,14 +30,18 @@ namespace Ensure.AndroidApp.Data
         /// <param name="userName">The username</param>
         /// <param name="password">The password</param>
         /// <returns>Whether logged in</returns>
-        public async Task<bool> LogUserIn(string userName, string password)
+        public async Task<ApiResponse> LogUserIn(string userName, string password)
         {
-            var res = await http.GetAsync($"/api/Account/login?username={userName}&password={password}");
-            if (!res.IsSuccessStatusCode) return false; // failure
-            var info = JsonConvert.DeserializeObject<ApiUserInfo>(await res.Content.ReadAsStringAsync());
-            application.UserInfo = info;
-            SaveUserInfoToSp();
-            return true;
+            using (var msg = await http.GetAsync($"/api/Account/login?username={userName}&password={password}"))
+            {
+                var res = JsonConvert.DeserializeObject<ApiResponse<ApiUserInfo>>(await msg.Content.ReadAsStringAsync());
+                if (!res.IsError)
+                {
+                    application.UserInfo = res.Response;
+                    SaveUserInfoToSp();
+                }
+                return res;
+            }
         }
 
         public async Task<bool> RegiserUser(string userName, string email, string password,
@@ -113,7 +117,7 @@ namespace Ensure.AndroidApp.Data
             return info;
         }
 
-        public bool IsLoggedIn => UserInfo != null;
+        public bool IsUserLoggedIn => UserInfo != null;
         public ApiUserInfo UserInfo => application.UserInfo;
 
         [Obsolete]
@@ -124,7 +128,7 @@ namespace Ensure.AndroidApp.Data
         /// <returns>Whether update succeeded</returns>
         public async Task<bool> SetUserTarget(short target)
         {
-            if (IsLoggedIn && IsInternetConnectionAvailable())
+            if (IsUserLoggedIn && IsInternetConnectionAvailable())
             {
                 var res = await http.PostAsync($"/api/Account/SetTarget?target={target}");
                 if (!res.IsSuccessStatusCode)

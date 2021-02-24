@@ -3,6 +3,7 @@ using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Data;
 using Ensure.Domain.Entities;
+using Ensure.Domain.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -39,8 +40,9 @@ namespace Ensure.AndroidApp.Adapters
 			// Replace the contents of the view with that element
 			var holder = viewHolder as EnsureRecyclerAdapterViewHolder;
 			holder.DateLoggedTv.Text = item.Logged.ToShortTimeString();
-			holder.TasteTv.Text = item.EnsureTaste.ToString();
 			holder.LogId = item.Id;
+			holder.SetTaste(item.EnsureTaste);
+				
 		}
 
 		public override int ItemCount => Items.Count;
@@ -55,6 +57,7 @@ namespace Ensure.AndroidApp.Adapters
 		public TextView DateLoggedTv { get; set; }
 		public TextView TasteTv { get; set; }
 		public string LogId { get; set; }
+		public ImageView TasteImage { get; set; }
 
 		public EnsureRecyclerAdapterViewHolder(View itemView, Action<EnsureRecyclerAdapterClickEventArgs> clickListener,
 							Action<EnsureRecyclerAdapterClickEventArgs> longClickListener) : base(itemView)
@@ -63,6 +66,15 @@ namespace Ensure.AndroidApp.Adapters
 			TasteTv = ItemView.FindViewById<TextView>(Resource.Id.EnsureRvAdapterTaste);
 			itemView.Click += (sender, e) => clickListener(new EnsureRecyclerAdapterClickEventArgs { View = itemView, Position = AdapterPosition });
 			itemView.LongClick += (sender, e) => longClickListener(new EnsureRecyclerAdapterClickEventArgs { View = itemView, Position = AdapterPosition });
+			// set image
+			TasteImage = ItemView.FindViewById<ImageView>(Resource.Id.EnsureReceyclerItemIv);
+		}
+
+		public void SetTaste(EnsureTaste taste)
+        {
+			TasteImage.SetImageResource(TasteImage.Context.Resources.GetIdentifier("ensure_taste_" +
+					taste.ToString().ToLower(), "drawable", TasteImage.Context.PackageName));
+			TasteTv.Text = taste.ToString();
 		}
 	}
 

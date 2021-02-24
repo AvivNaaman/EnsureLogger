@@ -44,12 +44,21 @@ namespace Ensure.Web.Controllers
 			return await _ensureService.LogAsync(User.Identity.Name, taste);
 		}
 
-		[Route("AddBulk")]
-		public async Task<ActionResult<List<EnsureLog>>> AddBulk([FromForm] List<EnsureLog> logs)
+		/// <summary>
+        /// Syncs all the client's ensures with the database
+        /// </summary>
+        /// <param name="toSync">The ensures sync model</param>
+        /// <returns>The CREATED ensures</returns>
+		[Route("SyncLogs")]
+		public async Task<ActionResult<List<EnsureLog>>> SyncLogs([FromForm] List<EnsureSyncModel> toSync)
         {
-			return await _ensureService.LogBulkAsync(User.Identity.Name, logs);
+			return await _ensureService.SyncEnsuresAsync(User.Identity.Name, toSync);
         }
 
+		/// <summary>
+        /// Removes a specific ensure log
+        /// </summary>
+        /// <param name="id">The id of the log to remove</param>
 		[Route("RemoveLog")]
 		[HttpPost]
 		public async Task<ActionResult> RemoveLog(string id)
@@ -63,6 +72,11 @@ namespace Ensure.Web.Controllers
 			else return BadRequest();
 		}
 
+		/// <summary>
+        /// Returns the logs of a specific date
+        /// </summary>
+        /// <param name="date">The date to look for logs on</param>
+        /// <returns>The logs</returns>
 		[Route("GetLogs")]
 		[HttpGet]
 		public async Task<ActionResult<ApiEnsuresList>> GetLogs(string date)
@@ -80,10 +94,5 @@ namespace Ensure.Web.Controllers
 					d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
 			return new ApiEnsuresList { CurrentReturnedDate = d, Logs = el };
 		}
-
-		[Obsolete]
-		[Route("TodayProgress")]
-		[HttpGet]
-		public async Task<ActionResult<int>> TodayProgress() => (await GetLogs(string.Empty)).Value.Logs.Count;
 	}
 }

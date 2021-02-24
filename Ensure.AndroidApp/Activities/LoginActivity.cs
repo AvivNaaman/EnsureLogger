@@ -67,7 +67,8 @@ namespace Ensure.AndroidApp
             }
 
             SetUiLoadingState(true);
-            if (await userService.LogUserIn(username, pwd)) // login successful
+            var loginResult = await userService.LogUserIn(username, pwd);
+            if (!loginResult.IsError) // login successful
             {
                 SetResult(Result.Ok);
                 Finish();
@@ -79,7 +80,9 @@ namespace Ensure.AndroidApp
                 // Show error alert
                 new AlertDialog.Builder(this)
                     .SetTitle("Login failed")
-                    .SetMessage("One or more of the credentials were wrong.")
+                    .SetMessage(loginResult.ErrorMessage)
+                    .SetCancelable(true)
+                    .SetNegativeButton("Close", (sender, args) => ((AlertDialog)sender).Cancel())
                     .Create().Show();
             }
             SetUiLoadingState(false);
@@ -92,7 +95,7 @@ namespace Ensure.AndroidApp
         private void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
-            submitBtn.Clickable = submitBtn.Enabled = submitBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+            registerBtn.Enabled = submitBtn.Enabled = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
         }
 
         // just prevent the Finish() call on default

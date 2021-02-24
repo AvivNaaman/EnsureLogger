@@ -1,5 +1,6 @@
 ﻿using Ensure.Domain.Entities;
 using Ensure.Domain.Enums;
+using Ensure.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -47,6 +48,6 @@ namespace Ensure.Web.Services
         /// <param name="name">The name of the logging user</param>
         /// <param name="logs">The logs to insert</param>
         /// <returns>The inserted logs</returns>
-        public Task<ActionResult<List<EnsureLog>>> LogBulkAsync(string userName, List<EnsureLog> logs);
+        public Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userName, List<EnsureSyncModel> logs);
     }
 }

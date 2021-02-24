@@ -20,7 +20,7 @@ using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "Your History")]
+    [Activity(Label = "Manage History")]
     public class HistoryActivity : AppCompatActivity
     {
         // RecyclerView essentials
@@ -33,14 +33,18 @@ namespace Ensure.AndroidApp
 
         private DateTime displayedDate;
 
-        private EnsureRepository ensureRepo;
-
         private TextView displayedDateTv, emptyListMessage;
+
+        private ProgressBar topLoadingProgress;
+
+        private EnsureRepository ensureRepo;
 
         protected override async void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_history);
+
+            ensureRepo = new EnsureRepository(this);
 
             // Create your application here
             var mLayoutManager = new LinearLayoutManager(this);
@@ -51,7 +55,8 @@ namespace Ensure.AndroidApp
             // Data adapter
             ensuresRvAdapter = new EnsureRecyclerAdapter(ensures);
             logsRv.SetAdapter(ensuresRvAdapter);
-            logsRvTouchHelper = new EnsureLogTouchHelper(this, ensuresRvAdapter);
+            logsRvTouchHelper = new EnsureLogTouchHelper(ensuresRvAdapter);
+            logsRvTouchHelper.OnItemRecycled += LogsRv_ItemSwiped;
             // Touch helper (to handle item swipes)
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
             itemTouchHelper.AttachToRecyclerView(logsRv);
@@ -63,6 +68,7 @@ namespace Ensure.AndroidApp
 
             displayedDateTv = FindViewById<TextView>(Resource.Id.DisplayedDateHistory);
             emptyListMessage = FindViewById<TextView>(Resource.Id.NothingMessageHistory);
+            topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.HistoryActivityTopProgress);
 
             ensureRepo = new EnsureRepository(this);
 
@@ -88,6 +94,27 @@ namespace Ensure.AndroidApp
             displayedDate = newDate;
             displayedDateTv.Text = newDate.ToString("dd/MM/yyyy");
             await UpdateList();
+        }
+
+        private async void LogsRv_ItemSwiped(RecyclerView.ViewHolder viewHolder)
+        {
+
+            SetUiLoadingState(true);
+            // Remove item from local dataset & server:
+            var vh = (EnsureRecyclerAdapterViewHolder)viewHolder;
+            // local
+            ensuresRvAdapter.Items.RemoveAll(l => l.Id == vh.LogId);
+            ensuresRvAdapter.NotifyDataSetChanged();
+            // server
+            try
+            {
+                await ensureRepo.RemoveLogAsync(vh.LogId);
+            }
+            catch
+            {
+                // TOOD: Catch Errors!
+            }
+            SetUiLoadingState(false);
         }
 
         private async Task UpdateList()
@@ -118,18 +145,24 @@ namespace Ensure.AndroidApp
         }
 
 
-    private void SetUiLoadingState(bool isLoading) { }
+        private void SetUiLoadingState(bool isLoading)
+        {
+            topLoadingProgress.Indeterminate = isLoading;
+            logsRvTouchHelper.EnableSwipe = !isLoading;
+        }
 
         /// <summary> Ensure RecyclerView swipe/move event handler class </summary>
         private class EnsureLogTouchHelper : ItemTouchHelper.Callback
         {
-            private readonly HistoryActivity context;
             private readonly EnsureRecyclerAdapter adapter;
             public bool EnableSwipe { get; set; }
 
-            public EnsureLogTouchHelper(HistoryActivity context, EnsureRecyclerAdapter adapter)
+            public delegate void ItemRecycledEvent(RecyclerView.ViewHolder viewHolder);
+
+            public event ItemRecycledEvent OnItemRecycled;
+
+            public EnsureLogTouchHelper(EnsureRecyclerAdapter adapter)
             {
-                this.context = context;
                 this.adapter = adapter;
             }
 
@@ -145,24 +178,9 @@ namespace Ensure.AndroidApp
                 return true;
             }
 
-            public override async void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
+            public override void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
             {
-                context.SetUiLoadingState(true);
-                // Remove item from local dataset & server:
-                var vh = (EnsureRecyclerAdapterViewHolder)viewHolder;
-                // local
-                adapter.Items.RemoveAll(l => l.Id == vh.LogId);
-                adapter.NotifyDataSetChanged();
-                // server
-                HttpHelper helper = new HttpHelper(context);
-                var res = await helper.PostAsync($"/api/Ensure/RemoveLog?id={vh.LogId}");
-                if (!res.IsSuccessStatusCode)
-                {
-                }
-                else
-                {
-                }
-                context.SetUiLoadingState(false);
+                OnItemRecycled?.Invoke(viewHolder); // invoke event if has subscribers
             }
         }
     }

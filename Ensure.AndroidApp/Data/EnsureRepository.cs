@@ -82,13 +82,16 @@ namespace Ensure.AndroidApp.Data
                     EnsureTaste = e.EnsureTaste,
                     UserId = e.UserId,
                     Logged = e.Logged,
-                    IsSynced = true
+                    SyncState = EnsureSyncState.Synced
                 }).ToList();
 
                 // cache all (delete old that are already there & insert the new ones):
                 var day = ensuresList.CurrentReturnedDate.Date;
-                await db.ExecuteAsync("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
-                await db.InsertAllAsync(ensures);
+                await db.RunInTransactionAsync(t =>
+                {
+                    t.Execute("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
+                    t.InsertAll(ensures);
+                });
                 await CloseDbConnection();
 
             }
@@ -116,16 +119,18 @@ namespace Ensure.AndroidApp.Data
             // if net available - push to server
             if (IsInternetConnectionAvailable())
             {
-                var res = await http.PostAsync($"/api/Ensure/AddLog?taste={(int)taste}");
-                if (!res.IsSuccessStatusCode) // failure
+                using (var res = await http.PostAsync($"/api/Ensure/AddLog?taste={(int)taste}"))
                 {
-                    HandleHttpError(res);
-                    return null;
-                }
-                else
-                {
-                    log = JsonConvert.DeserializeObject<InternalEnsureLog>(await res.Content.ReadAsStringAsync());
-                    log.IsSynced = true; // becuase got it from server
+                    if (!res.IsSuccessStatusCode) // failure
+                    {
+                        HandleHttpError(res);
+                        return null;
+                    }
+                    else
+                    {
+                        log = JsonConvert.DeserializeObject<InternalEnsureLog>(await res.Content.ReadAsStringAsync());
+                        log.SyncState = EnsureSyncState.Synced; // becuase got it from server
+                    }
                 }
             }
             // if net not available - generate temporary ID until synced.
@@ -135,7 +140,7 @@ namespace Ensure.AndroidApp.Data
                 {
                     EnsureTaste = taste,
                     Id = Guid.NewGuid().ToString(),
-                    IsSynced = false,
+                    SyncState = EnsureSyncState.ToAdd,
                     UserId = ((EnsureApplication)context.ApplicationContext).UserInfo.Id
                 };
             }
@@ -147,6 +152,7 @@ namespace Ensure.AndroidApp.Data
 
         private void HandleHttpError(HttpResponseMessage message)
         {
+            // TODO: Check for better thing to do here?
             if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 throw new AuthenticationException();
@@ -160,6 +166,36 @@ namespace Ensure.AndroidApp.Data
             }
         }
 
+        public async Task RemoveLogAsync(string logId)
+        {
+            await OpenDbConnection();
+            if (IsInternetConnectionAvailable())
+            {
+                using (var res = await http.PostAsync($"/api/Ensures/RemoveLog?id={logId}")) // remove from remote
+                {
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        HandleHttpError(res);
+                        return;
+                    }
+                    // remove from local
+                    await db.Table<InternalEnsureLog>().DeleteAsync(t => t.Id == logId);
+                }
+            }
+            else
+            {
+                var toRemove = await db.Table<InternalEnsureLog>()
+                    .FirstOrDefaultAsync(l => l.Id == logId);
+                if (toRemove.SyncState == EnsureSyncState.Synced) // if offline and we have to update cache later
+                {
+                    // set sync state to "to remove"
+                    toRemove.SyncState = EnsureSyncState.ToRemove;
+                    await db.UpdateAsync(toRemove);
+                }
+            }
+            await CloseDbConnection();
+        }
+
         /// <summary>
         /// Pushes all the unsynced ensures to the server
         /// </summary>
@@ -170,33 +206,48 @@ namespace Ensure.AndroidApp.Data
                 await OpenDbConnection();
                 // query all unsynced on local db
                 var toPush = await db.Table<InternalEnsureLog>()
-                    .Where(l => l.IsSynced != true).ToListAsync();
+                    .Where(l => l.SyncState != EnsureSyncState.Synced).ToListAsync();
 
-                var toPost = toPush.Select(l => (EnsureLog)l);
+                if (toPush.Count <= 0) return; // nothing to push? skip.
+
+                // Build model for server
+                var toPost = new List<EnsureSyncModel>();
+                toPush.ForEach(tp =>
+                {
+                    if (tp.SyncState == EnsureSyncState.ToAdd)
+                        toPost.Add(new EnsureSyncModel { ToAdd = true, ToSync = tp });
+                    else
+                        toPost.Add(new EnsureSyncModel { ToAdd = false, ToSync = tp });
+                });
 
                 // post all & hope for good
                 var content =
                     new StringContent(JsonConvert.SerializeObject(toPost),
                     System.Text.Encoding.UTF8);
-                var res = await http.PostAsync("/api/Ensure/AddBulk");
 
-                if (!res.IsSuccessStatusCode)
+                using (var res = await http.PostAsync("/api/Ensures/SyncLogs", content))
                 {
-                    HandleHttpError(res);
-                    return;
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        HandleHttpError(res);
+                        return;
+                    }
+
+                    // returned from server as created
+                    var toInsert = MapServerLogsToInternal(JsonConvert.DeserializeObject<List<EnsureLog>>(await res.Content.ReadAsStringAsync()));
+
+                    // remove all from cache and re-insert
+                    await db.RunInTransactionAsync(c =>
+                    {
+                        c.Table<InternalEnsureLog>().Delete(l => l.SyncState != EnsureSyncState.Synced);
+                        c.InsertAll(toInsert);
+                    });
                 }
-
-                var toInsert = EnsureLogsToInternal(JsonConvert.DeserializeObject<List<EnsureLog>>(await res.Content.ReadAsStringAsync()));
-
-                // remove all from cache and re-insert
-                await db.Table<InternalEnsureLog>().DeleteAsync(l => l.IsSynced != true);
-                await db.InsertAllAsync(toInsert);
-
                 await CloseDbConnection();
             }
         }
 
-        public IEnumerable<InternalEnsureLog> EnsureLogsToInternal(IEnumerable<EnsureLog> input)
+        public IEnumerable<InternalEnsureLog> MapServerLogsToInternal(IEnumerable<EnsureLog> input)
         {
             foreach (var item in input)
             {
@@ -204,7 +255,7 @@ namespace Ensure.AndroidApp.Data
                 {
                     Id = item.Id,
                     EnsureTaste = item.EnsureTaste,
-                    IsSynced = true,
+                    SyncState = EnsureSyncState.Synced,
                     Logged = item.Logged,
                     UserId = item.UserId
                 };

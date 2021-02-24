@@ -1,5 +1,6 @@
 ﻿using Ensure.Domain.Entities;
 using Ensure.Domain.Enums;
+using Ensure.Domain.Models;
 using Ensure.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -67,17 +68,27 @@ namespace Ensure.Web.Services
 			await _dbContext.SaveChangesAsync();
 		}
 
-        public async Task<ActionResult<List<EnsureLog>>> LogBulkAsync(string userName, List<EnsureLog> logs)
+        public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userName, List<EnsureSyncModel> logs)
 		{
+			// TODO: Insert/Delete based on content
 			var u = await _userManager.FindByNameAsync(userName);
 
-			// add all with fresh GUIDs
-			var newList = logs.Select(l => new EnsureLog(l)).ToList();
+			var addedEnsures = new List<EnsureLog>();
 
-			_dbContext.Logs.AddRange(newList);
+			logs.ForEach(l => {
+				if (l.ToAdd)
+                {
+					var newl = new EnsureLog(l.ToSync); // renew log ID
+					addedEnsures.Add(newl);
+					_dbContext.Logs.Add(newl);
+				}
+				else
+					_dbContext.Logs.Remove(l.ToSync);
+			});
+
 			await _dbContext.SaveChangesAsync();
 
-			return newList;
+			return addedEnsures;
 		}
     }
 }

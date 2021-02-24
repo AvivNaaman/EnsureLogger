@@ -100,6 +100,8 @@
     <Compile Include="EnsureAndroidConstants.cs" />
     <Compile Include="Helpers\NotificationWorker.cs" />
     <Compile Include="Adapters\EnsureTasteSpinnerAdapter.cs" />
+    <Compile Include="Data\EnsureSyncState.cs" />
+    <Compile Include="Activities\ILoadingStatedActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

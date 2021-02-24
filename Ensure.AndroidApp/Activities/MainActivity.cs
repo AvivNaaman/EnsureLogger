@@ -229,24 +229,26 @@ namespace Ensure.AndroidApp
 
         protected override void OnResume()
         {
+            base.OnResume();
             // init services & load data
             ensureService = new EnsureRepository(this);
             userService = new UserService(this);
             userService.LoadUserInfoFromSp();
+
+            if (!userService.IsUserLoggedIn)
+            {
+                StartLoginActivity();
+                return;
+            }
 
             // register network broadcast receiver
             netStateReceiver = new NetStateReceiver();
             IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
             netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             RegisterReceiver(netStateReceiver, netFilter);
-            base.OnResume();
 
-            if (userService.IsLoggedIn)
-            {
-                helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
-                netStateReceiver.NetworkStateChanged -= NetworkStateChanged;
-                netStateReceiver.NetworkStateChanged += NetworkStateChanged;
-            }
+            helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
+            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             UpdateTargetUi();
         }
 
@@ -281,9 +283,12 @@ namespace Ensure.AndroidApp
 
         protected override void OnPause()
         {
-            UnregisterReceiver(netStateReceiver);
-            netStateReceiver.Dispose();
-            netStateReceiver = null;
+            if (netStateReceiver != null)
+            {
+                UnregisterReceiver(netStateReceiver);
+                netStateReceiver.Dispose();
+                netStateReceiver = null;
+            }
             base.OnPause();
         }
 

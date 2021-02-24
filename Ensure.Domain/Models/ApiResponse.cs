@@ -14,7 +14,7 @@ namespace Ensure.Domain.Models
         }
 
         public string ErrorMessage { get; set; }
-        public bool IsError { get { return !string.IsNullOrEmpty(ErrorMessage); } }
+        public bool IsError => !string.IsNullOrEmpty(ErrorMessage); 
     }
 
 }

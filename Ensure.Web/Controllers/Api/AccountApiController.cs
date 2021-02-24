@@ -54,11 +54,11 @@ namespace Ensure.Web.Controllers
             }
             else
             {
-                return BadRequest(new ApiResponse<ApiUserInfo>("User Name and Password do not match any user."));
+                return BadRequest(new ApiResponse<ApiUserInfo>("User Name and Password do not match any existing user."));
             }
         }
 
-        [Obsolete("Should be replaces by GetInfo")]
+        [Obsolete("Should be replaced by GetInfo")]
         [Route("GetTarget")]
         [HttpGet]
         public async Task<ActionResult<int>> GetTarget()
@@ -92,7 +92,7 @@ namespace Ensure.Web.Controllers
             {
                 return await Login(model.UserName, model.Password);
             }
-            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join('\n', res.Errors.Select(ie => ie.Description))));
+            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res.Errors.Select(ie => ie.Description))));
         }
     }
 }

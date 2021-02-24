@@ -3460,16 +3460,19 @@ namespace Ensure.AndroidApp
 			public const int end_padder = 2131230825;
 			
 			// aapt resource value: 0x7F080003
-			public const int EnsureRvAdapterDate = 2131230723;
+			public const int EnsureReceyclerItemIv = 2131230723;
 			
 			// aapt resource value: 0x7F080004
-			public const int EnsureRvAdapterTaste = 2131230724;
-			
-			// aapt resource value: 0x7F080006
-			public const int EnsuresRv = 2131230726;
+			public const int EnsureRvAdapterDate = 2131230724;
 			
 			// aapt resource value: 0x7F080005
-			public const int EnsureTasteSpinner = 2131230725;
+			public const int EnsureRvAdapterTaste = 2131230725;
+			
+			// aapt resource value: 0x7F080007
+			public const int EnsuresRv = 2131230727;
+			
+			// aapt resource value: 0x7F080006
+			public const int EnsureTasteSpinner = 2131230726;
 			
 			// aapt resource value: 0x7F08006A
 			public const int enterAlways = 2131230826;
@@ -3504,8 +3507,8 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F080074
 			public const int forever = 2131230836;
 			
-			// aapt resource value: 0x7F080007
-			public const int FUNCTION = 2131230727;
+			// aapt resource value: 0x7F080008
+			public const int FUNCTION = 2131230728;
 			
 			// aapt resource value: 0x7F080075
 			public const int ghost_view = 2131230837;
@@ -3513,20 +3516,20 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F080076
 			public const int group_divider = 2131230838;
 			
-			// aapt resource value: 0x7F080008
-			public const int HelloUserTv = 2131230728;
-			
 			// aapt resource value: 0x7F080009
-			public const int HistoryActivityTopProgress = 2131230729;
+			public const int HelloUserTv = 2131230729;
 			
 			// aapt resource value: 0x7F08000A
-			public const int HistoryImageBtn = 2131230730;
+			public const int HistoryActivityTopProgress = 2131230730;
 			
 			// aapt resource value: 0x7F08000B
-			public const int HistoryNextBtn = 2131230731;
+			public const int HistoryImageBtn = 2131230731;
 			
 			// aapt resource value: 0x7F08000C
-			public const int HistoryPrevBtn = 2131230732;
+			public const int HistoryNextBtn = 2131230732;
+			
+			// aapt resource value: 0x7F08000D
+			public const int HistoryPrevBtn = 2131230733;
 			
 			// aapt resource value: 0x7F080077
 			public const int home = 2131230839;
@@ -3576,29 +3579,29 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F080086
 			public const int list_item = 2131230854;
 			
-			// aapt resource value: 0x7F08000D
-			public const int LoginActivityTopProgress = 2131230733;
-			
 			// aapt resource value: 0x7F08000E
-			public const int LoginBtnGo = 2131230734;
+			public const int LoginActivityTopProgress = 2131230734;
 			
 			// aapt resource value: 0x7F08000F
-			public const int LoginPasswordEt = 2131230735;
+			public const int LoginBtnGo = 2131230735;
 			
 			// aapt resource value: 0x7F080010
-			public const int LoginRegisterBtn = 2131230736;
+			public const int LoginPasswordEt = 2131230736;
 			
 			// aapt resource value: 0x7F080011
-			public const int LoginUserNameEt = 2131230737;
+			public const int LoginRegisterBtn = 2131230737;
 			
-			// aapt resource value: 0x7F080013
-			public const int MainActivityRefreshableLayout = 2131230739;
+			// aapt resource value: 0x7F080012
+			public const int LoginUserNameEt = 2131230738;
 			
 			// aapt resource value: 0x7F080014
-			public const int MainActivityTopProgress = 2131230740;
+			public const int MainActivityRefreshableLayout = 2131230740;
 			
 			// aapt resource value: 0x7F080015
-			public const int MainProgressTv = 2131230741;
+			public const int MainActivityTopProgress = 2131230741;
+			
+			// aapt resource value: 0x7F080016
+			public const int MainProgressTv = 2131230742;
 			
 			// aapt resource value: 0x7F080087
 			public const int masked = 2131230855;
@@ -3609,8 +3612,8 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F080089
 			public const int message = 2131230857;
 			
-			// aapt resource value: 0x7F080012
-			public const int META = 2131230738;
+			// aapt resource value: 0x7F080013
+			public const int META = 2131230739;
 			
 			// aapt resource value: 0x7F08008A
 			public const int middle = 2131230858;
@@ -3639,8 +3642,8 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F080092
 			public const int normal = 2131230866;
 			
-			// aapt resource value: 0x7F080016
-			public const int NothingMessageHistory = 2131230742;
+			// aapt resource value: 0x7F080017
+			public const int NothingMessageHistory = 2131230743;
 			
 			// aapt resource value: 0x7F080093
 			public const int notification_background = 2131230867;
@@ -3666,23 +3669,23 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F08009A
 			public const int pin = 2131230874;
 			
-			// aapt resource value: 0x7F080017
-			public const int ProfileActivityTopProgress = 2131230743;
-			
 			// aapt resource value: 0x7F080018
-			public const int ProfileEmailTv = 2131230744;
+			public const int ProfileActivityTopProgress = 2131230744;
 			
 			// aapt resource value: 0x7F080019
-			public const int ProfileImageBtn = 2131230745;
+			public const int ProfileEmailTv = 2131230745;
 			
 			// aapt resource value: 0x7F08001A
-			public const int ProfileSaveButton = 2131230746;
+			public const int ProfileImageBtn = 2131230746;
 			
 			// aapt resource value: 0x7F08001B
-			public const int ProfileTargetEt = 2131230747;
+			public const int ProfileSaveButton = 2131230747;
 			
 			// aapt resource value: 0x7F08001C
-			public const int ProfileUserNameTv = 2131230748;
+			public const int ProfileTargetEt = 2131230748;
+			
+			// aapt resource value: 0x7F08001D
+			public const int ProfileUserNameTv = 2131230749;
 			
 			// aapt resource value: 0x7F08009B
 			public const int progress_circular = 2131230875;
@@ -3693,17 +3696,14 @@ namespace Ensure.AndroidApp
 			// aapt resource value: 0x7F08009D
 			public const int radio = 2131230877;
 			
-			// aapt resource value: 0x7F08001D
-			public const int RegisterActivityTopProgress = 2131230749;
-			
 			// aapt resource value: 0x7F08001E
-			public const int RegisterBtnGo = 2131230750;
+			public const int RegisterActivityTopProgress = 2131230750;
 			
 			// aapt resource value: 0x7F08001F
-			public const int RegisterEmailEt = 2131230751;
+			public const int RegisterBtnGo = 2131230751;
 			
 			// aapt resource value: 0x7F080020
-			public const int RegisterLoginBtn = 2131230752;
+			public const int RegisterEmailEt = 2131230752;
 			
 			// aapt resource value: 0x7F080021
 			public const int RegisterPasswordEt = 2131230753;

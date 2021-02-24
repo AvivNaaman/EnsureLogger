@@ -23,13 +23,6 @@
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:text="@string/RegisterWelcomeTitle"
-			android:textSize="35sp"
-			android:gravity="center_horizontal"
-			android:paddingBottom="15sp"/>
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
 			android:text="@string/RegisterWelcomeText"
 			android:textSize="15sp"
 			android:gravity="center_horizontal"
@@ -74,12 +67,5 @@
 			android:paddingHorizontal="45sp"
 			android:text="@string/RegisterBtnText"
 			android:id="@+id/RegisterBtnGo"/>
-		<Button
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal"
-			android:paddingHorizontal="41sp"
-			android:text="@string/RegisterLoginInsteadText"
-			android:id="@+id/RegisterLoginBtn"/>
 	</LinearLayout>
 </LinearLayout>

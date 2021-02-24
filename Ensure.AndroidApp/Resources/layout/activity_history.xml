@@ -23,12 +23,6 @@
 		android:paddingTop="0sp"
 		android:paddingBottom="7sp"
 		android:paddingHorizontal="17sp">
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="Full History"
-			android:gravity="center"
-			android:textSize="27sp"/>
 
 		<!-- Buttons & Date panel -->
 		<LinearLayout

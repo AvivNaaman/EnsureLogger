@@ -23,7 +23,7 @@ namespace Ensure.AndroidApp
     public class RegisterActivity : AppCompatActivity
     {
         private ProgressBar topLoadingProgress;
-        private Button submitBtn, loginInsteadBtn;
+        private Button submitBtn;
         private EditText pwd, pwdVertification, userName, email, target;
 
         private UserService userService;
@@ -39,9 +39,6 @@ namespace Ensure.AndroidApp
             submitBtn = FindViewById<Button>(Resource.Id.RegisterBtnGo);
             submitBtn.Click += SubmitBtn_Click;
 
-            loginInsteadBtn = FindViewById<Button>(Resource.Id.RegisterLoginBtn);
-            loginInsteadBtn.Click += LoginInsteadBtn_Click;
-
             // fields
             pwd = FindViewById<EditText>(Resource.Id.RegisterPasswordEt);
             pwdVertification = FindViewById<EditText>(Resource.Id.RegisterPasswordVertificationEt);
@@ -50,12 +47,6 @@ namespace Ensure.AndroidApp
             target = FindViewById<EditText>(Resource.Id.RegisterTargetEt);
 
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
-        }
-
-        // TODO: Remove login instead button!
-        private void LoginInsteadBtn_Click(object sender, EventArgs e)
-        {
-            OnBackPressed();
         }
 
         private async void SubmitBtn_Click(object sender, EventArgs e)
@@ -111,7 +102,7 @@ namespace Ensure.AndroidApp
         private void SetUiLoadingState(bool isLoading)
         {
             // disabled all fields & buttons
-            View[] fields = { pwd, pwdVertification, userName, target, email, submitBtn, loginInsteadBtn };
+            View[] fields = { pwd, pwdVertification, userName, target, email, submitBtn };
             fields.ToList().ForEach(f => f.Enabled = !isLoading);
 
             topLoadingProgress.Indeterminate = isLoading;

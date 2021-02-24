@@ -18,24 +18,20 @@
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
 		android:padding="27sp">
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:textSize="27sp"
-			android:text="@string/ProfileTitle"
-			android:gravity="center"
-			android:paddingBottom="23sp"/>
 
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textSize="22sp"
-			android:id="@+id/ProfileUserNameTv"/>
+			android:id="@+id/ProfileUserNameTv"
+			android:text="UserName"/>
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:textSize="22sp"
-			android:id="@+id/ProfileEmailTv"/>
+			android:id="@+id/ProfileEmailTv"
+			android:text="address@example.com"/>
+
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
