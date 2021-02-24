@@ -11,7 +11,8 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  toBuild: 'Ensure.Web'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet build $(toBuild) --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
