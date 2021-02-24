@@ -22,6 +22,7 @@ using Ensure.Domain;
 using Ensure.Domain.Models;
 using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.BroadcastReceivers;
+using System.Security.Authentication;
 
 namespace Ensure.AndroidApp
 {
@@ -105,7 +106,14 @@ namespace Ensure.AndroidApp
         /// </summary>
         private async void MainActivity_Refresh(object sender, EventArgs e)
         {
-            await RefreshTargetProgress();
+            try
+            {
+                await RefreshTargetProgress();
+            }
+            catch (AuthenticationException)
+            {
+                StartLoginActivity();
+            }
             refreshLayout.Refreshing = false;
         }
 
@@ -116,12 +124,19 @@ namespace Ensure.AndroidApp
         {
             SetUiLoadingState(true);
             // add to server (if online) & cache
-            var result = await ensureService.AddLogAsync((EnsureTaste)tasteSpinner.SelectedItemPosition);
-            if (result != null)
+            try
             {
-                Toast.MakeText(this, "Log Added", ToastLength.Long).Show();
-                currentProgress++;
-                UpdateTargetUi();
+                var result = await ensureService.AddLogAsync((EnsureTaste)tasteSpinner.SelectedItemPosition);
+                if (result != null)
+                {
+                    Toast.MakeText(this, "Log Added", ToastLength.Long).Show();
+                    currentProgress++;
+                    UpdateTargetUi();
+                }
+            }
+            catch (AuthenticationException)
+            {
+                StartLoginActivity();
             }
             SetUiLoadingState(false);
         }
@@ -140,8 +155,8 @@ namespace Ensure.AndroidApp
         {
             SetUiLoadingState(true);
             // refresh today's logs (+history)
-            var logs = await ensureService.GetLogs(DateTime.MinValue);
             await userService.RefreshInfo();
+            var logs = await ensureService.GetLogs(DateTime.MinValue);
             currentProgress = logs.Count;
             UpdateTargetUi();
             SetUiLoadingState(false); return;
@@ -232,10 +247,6 @@ namespace Ensure.AndroidApp
                 netStateReceiver.NetworkStateChanged -= NetworkStateChanged;
                 netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             }
-            else
-            {
-                StartLoginActivity();
-            }
             UpdateTargetUi();
         }
 
@@ -250,8 +261,15 @@ namespace Ensure.AndroidApp
                 if (isNetConnected) // offline -> online: SYNC!
                 {
                     SetUiLoadingState(true);
-                    await ensureService.SyncEnsures();
-                    await RefreshTargetProgress();
+                    try
+                    {
+                        await ensureService.SyncEnsures();
+                        await RefreshTargetProgress();
+                    }
+                    catch (AuthenticationException)
+                    {
+                        StartLoginActivity();
+                    }
                     SetUiLoadingState(false);
                 }
                 else // online -> offline

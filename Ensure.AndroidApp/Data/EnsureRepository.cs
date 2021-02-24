@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Net;
+using Android.Support.V7.App;
 using Ensure.AndroidApp.Helpers;
 using Ensure.Domain;
 using Ensure.Domain.Entities;
@@ -145,12 +147,16 @@ namespace Ensure.AndroidApp.Data
 
         private void HandleHttpError(HttpResponseMessage message)
         {
-            // TODO: Make it more logical!
-            // if unauthorized (=authentication is required), go to login page.
             if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                Intent i = new Intent(context, typeof(LoginActivity));
-                context.StartActivity(i);
+                throw new AuthenticationException();
+            }
+            else
+            {
+                new AlertDialog.Builder(context)
+                    .SetMessage($"HTTP Error {message.StatusCode} - {message.ReasonPhrase}")
+                    .SetTitle("HTTP Error")
+                    .Create().Show();
             }
         }
 
@@ -159,7 +165,6 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         public async Task SyncEnsures()
         {
-            // TODO: Add Bulk insertion support on server side!
             if (IsInternetConnectionAvailable())
             {
                 await OpenDbConnection();
@@ -167,22 +172,42 @@ namespace Ensure.AndroidApp.Data
                 var toPush = await db.Table<InternalEnsureLog>()
                     .Where(l => l.IsSynced != true).ToListAsync();
 
-                // post each
-                foreach (var log in toPush)
+                var toPost = toPush.Select(l => (EnsureLog)l);
+
+                // post all & hope for good
+                var content =
+                    new StringContent(JsonConvert.SerializeObject(toPost),
+                    System.Text.Encoding.UTF8);
+                var res = await http.PostAsync("/api/Ensure/AddBulk");
+
+                if (!res.IsSuccessStatusCode)
                 {
-                    // push to server as new
-                    var res = await http.PostAsync($"/api/Ensure/AddLog?taste={(int)log.EnsureTaste}");
-                    if (!res.IsSuccessStatusCode)
-                    {
-                        HandleHttpError(res);
-                        continue;
-                    }
-                    var newLog = JsonConvert.DeserializeObject<InternalEnsureLog>(await res.Content.ReadAsStringAsync());
-                    // replace old cached with new fetched to avoid duplicates
-                    await db.DeleteAsync(log);
-                    await db.InsertAsync(newLog);
+                    HandleHttpError(res);
+                    return;
                 }
+
+                var toInsert = EnsureLogsToInternal(JsonConvert.DeserializeObject<List<EnsureLog>>(await res.Content.ReadAsStringAsync()));
+
+                // remove all from cache and re-insert
+                await db.Table<InternalEnsureLog>().DeleteAsync(l => l.IsSynced != true);
+                await db.InsertAllAsync(toInsert);
+
                 await CloseDbConnection();
+            }
+        }
+
+        public IEnumerable<InternalEnsureLog> EnsureLogsToInternal(IEnumerable<EnsureLog> input)
+        {
+            foreach (var item in input)
+            {
+                yield return new InternalEnsureLog
+                {
+                    Id = item.Id,
+                    EnsureTaste = item.EnsureTaste,
+                    IsSynced = true,
+                    Logged = item.Logged,
+                    UserId = item.UserId
+                };
             }
         }
 
