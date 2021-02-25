@@ -82,7 +82,7 @@ namespace Ensure.AndroidApp
                     .SetTitle("Login failed")
                     .SetMessage(loginResult.ErrorMessage)
                     .SetCancelable(true)
-                    .SetNegativeButton("Close", (sender, args) => ((AlertDialog)sender).Cancel())
+                    //.SetNegativeButton("Close", (sender, args) => ((AlertDialog)sender).Cancel())
                     .Create().Show();
             }
             SetUiLoadingState(false);
