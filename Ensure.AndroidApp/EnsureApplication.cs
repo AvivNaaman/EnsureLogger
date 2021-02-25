@@ -14,7 +14,14 @@ using System.Text;
 
 namespace Ensure.AndroidApp
 {
-	[Application]
+	[Application(Debuggable =
+#if DEBUG
+		true
+#else
+		false
+#endif
+		)
+		]
 	class EnsureApplication : Application
 	{
 		public ApiUserInfo UserInfo { get; set; }
