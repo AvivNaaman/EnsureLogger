@@ -17,7 +17,7 @@ using Ensure.AndroidApp.Helpers;
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "Profile & Account")]
-    public class ProfileActivity : AppCompatActivity
+    public class ProfileActivity : AppCompatActivity, ILoadingStatedActivity
     {
         private TextView userName, email;
         private EditText target;
@@ -57,17 +57,10 @@ namespace Ensure.AndroidApp
             }
             else
             {
-                try
+                short prevTarget = userService.UserInfo.DailyTarget;
+                if (!await userService.SetUserTarget(parsedTarget)) // TODO: Migrate to FULL user details update
                 {
-                    short prevTarget = userService.UserInfo.DailyTarget;
-                    if (!await userService.SetUserTarget(parsedTarget))
-                    {
-                        target.Text = prevTarget.ToString(); // error
-                    }
-                }
-                catch
-                {
-                    // TODO: Back to login
+                    target.Text = prevTarget.ToString(); // error
                 }
             }
             SetUiLoadingState(false);
@@ -81,7 +74,7 @@ namespace Ensure.AndroidApp
             target.Text = info.DailyTarget.ToString();
         }
 
-        private void SetUiLoadingState(bool isLoading)
+        public void SetUiLoadingState(bool isLoading)
         {
             topProgress.Indeterminate = isLoading;
             saveTargetBtn.Enabled = target.Enabled = !isLoading;

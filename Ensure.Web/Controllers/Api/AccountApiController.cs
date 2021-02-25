@@ -94,5 +94,15 @@ namespace Ensure.Web.Controllers
             }
             else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res.Errors.Select(ie => ie.Description))));
         }
+
+        [Route("PasswordReset")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> PasswordReset(string email)
+        {
+            var u = await _userManager.FindByEmailAsync(email);
+            await appUsersService.SendPasswordResetEmail(u,  Url.ActionLink("PasswordResetFinish", "Home"));
+            return Ok();
+        }
     }
 }

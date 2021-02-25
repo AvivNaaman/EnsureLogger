@@ -150,28 +150,12 @@ namespace Ensure.AndroidApp.Data
             return log;
         }
 
-        private void HandleHttpError(HttpResponseMessage message)
-        {
-            // TODO: Check for better thing to do here?
-            if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                throw new AuthenticationException();
-            }
-            else
-            {
-                new AlertDialog.Builder(context)
-                    .SetMessage($"HTTP Error {message.StatusCode} - {message.ReasonPhrase}")
-                    .SetTitle("HTTP Error")
-                    .Create().Show();
-            }
-        }
-
         public async Task RemoveLogAsync(string logId)
         {
             await OpenDbConnection();
             if (IsInternetConnectionAvailable())
             {
-                using (var res = await http.PostAsync($"/api/Ensures/RemoveLog?id={logId}")) // remove from remote
+                using (var res = await http.PostAsync($"/api/Ensure/RemoveLog?id={logId}")) // remove from remote
                 {
                     if (!res.IsSuccessStatusCode)
                     {

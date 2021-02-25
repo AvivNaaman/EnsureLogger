@@ -16,5 +16,7 @@ namespace Ensure.AndroidApp
     public static class EnsureAndroidConstants
     {
         public const string NotificationWorkLeftParamName = "leftToday";
+
+        public const string IntentAuthFailedExtraName = "AuthFailed";
     }
 }

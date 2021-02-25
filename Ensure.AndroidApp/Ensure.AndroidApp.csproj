@@ -38,6 +38,7 @@
     <EnableLLVM>false</EnableLLVM>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <BundleAssemblies>false</BundleAssemblies>
+    <AndroidUseAapt2>true</AndroidUseAapt2>
     <MandroidI18n />
 <LangVersion>latest</LangVersion>
 <AndroidSupportedAbis>arm64-v8a;armeabi-v7a;x86;x86_64</AndroidSupportedAbis>
@@ -89,7 +90,7 @@
     <Compile Include="Data\EnsureRepository.cs" />
     <Compile Include="Data\InternalEnsureLog.cs" />
     <Compile Include="Data\UserService.cs" />
-    <Compile Include="Data\BaseRepository.cs" />
+    <Compile Include="Data\BaseService.cs" />
     <Compile Include="Activities\HistoryActivity.cs" />
     <Compile Include="BroadcastReceivers\NetStateReceiver.cs" />
     <Compile Include="Helpers\NotificationHelper.cs" />

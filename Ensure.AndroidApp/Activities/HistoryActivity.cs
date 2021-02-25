@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,7 +22,7 @@ using Ensure.AndroidApp.Helpers;
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "Manage History")]
-    public class HistoryActivity : AppCompatActivity
+    public class HistoryActivity : AppCompatActivity, ILoadingStatedActivity
     {
         // RecyclerView essentials
         private RecyclerView logsRv;
@@ -55,7 +56,7 @@ namespace Ensure.AndroidApp
             // Data adapter
             ensuresRvAdapter = new EnsureRecyclerAdapter(ensures);
             logsRv.SetAdapter(ensuresRvAdapter);
-            logsRvTouchHelper = new EnsureLogTouchHelper(ensuresRvAdapter);
+            logsRvTouchHelper = new EnsureLogTouchHelper();
             logsRvTouchHelper.OnItemRecycled += LogsRv_ItemSwiped;
             // Touch helper (to handle item swipes)
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
@@ -102,18 +103,11 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(true);
             // Remove item from local dataset & server:
             var vh = (EnsureRecyclerAdapterViewHolder)viewHolder;
-            // local
+            // disaplay
             ensuresRvAdapter.Items.RemoveAll(l => l.Id == vh.LogId);
             ensuresRvAdapter.NotifyDataSetChanged();
-            // server
-            try
-            {
-                await ensureRepo.RemoveLogAsync(vh.LogId);
-            }
-            catch
-            {
-                // TOOD: Catch Errors!
-            }
+            // data
+            await ensureRepo.RemoveLogAsync(vh.LogId);
             SetUiLoadingState(false);
         }
 
@@ -145,26 +139,20 @@ namespace Ensure.AndroidApp
         }
 
 
-        private void SetUiLoadingState(bool isLoading)
+        public void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
-            logsRvTouchHelper.EnableSwipe = !isLoading;
+            logsRvTouchHelper.EnableSwipe =  nextBtn.Enabled = prevBtn.Enabled = !isLoading;
         }
 
         /// <summary> Ensure RecyclerView swipe/move event handler class </summary>
         private class EnsureLogTouchHelper : ItemTouchHelper.Callback
         {
-            private readonly EnsureRecyclerAdapter adapter;
             public bool EnableSwipe { get; set; }
 
             public delegate void ItemRecycledEvent(RecyclerView.ViewHolder viewHolder);
 
             public event ItemRecycledEvent OnItemRecycled;
-
-            public EnsureLogTouchHelper(EnsureRecyclerAdapter adapter)
-            {
-                this.adapter = adapter;
-            }
 
             public override int GetMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
             {

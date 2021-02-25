@@ -27,9 +27,9 @@ using System.Security.Authentication;
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "@string/app_name", MainLauncher = true)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : AppCompatActivity, ILoadingStatedActivity
     {
-        // TODO: Move to smart props!
+        // TODO: Move to smart props?
         private List<InternalEnsureLog> ensures = new List<InternalEnsureLog>();
 
         private ProgressBar horizontalTopProgress;
@@ -187,7 +187,7 @@ namespace Ensure.AndroidApp
         /// Changed the UI to match the loading state
         /// </summary>
         /// <param name="isLoading"></param>
-        private void SetUiLoadingState(bool isLoading)
+        public void SetUiLoadingState(bool isLoading)
         {
             horizontalTopProgress.Indeterminate = isLoading; // "disabled"
             refreshLayout.Enabled = addBtn.Enabled = !isLoading;
@@ -227,7 +227,7 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(false);
         }
 
-        protected override void OnResume()
+        protected override async void OnResume()
         {
             base.OnResume();
             // init services & load data
@@ -241,6 +241,11 @@ namespace Ensure.AndroidApp
                 return;
             }
 
+            // update logs & target & progress - force use of cache for nice start (won't block for long, I hope)
+            var l = await ensureService.GetLogs(DateTime.MinValue, true);
+            currentProgress = l.Count;
+            UpdateTargetUi();
+
             // register network broadcast receiver
             netStateReceiver = new NetStateReceiver();
             IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
@@ -249,7 +254,6 @@ namespace Ensure.AndroidApp
 
             helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
             netStateReceiver.NetworkStateChanged += NetworkStateChanged;
-            UpdateTargetUi();
         }
 
         /// <summary>
@@ -292,9 +296,14 @@ namespace Ensure.AndroidApp
             base.OnPause();
         }
 
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+        }
+
         enum ActivityRequestCodes
         {
-            Login
+            Login,
+            History
         }
 
     }

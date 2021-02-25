@@ -10,18 +10,25 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.Extensions.Configuration;
 using Ensure.Domain.Models;
+using FluentEmail.Core.Interfaces;
+using FluentEmail.Core;
 
 namespace Ensure.Web.Services
 {
     public class AppUsersService : IAppUsersService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly ISender emailSender;
+        private readonly ITemplateRenderer emailTemplateRenderer;
         private readonly IConfiguration config;
 
-        public AppUsersService(IConfiguration config, UserManager<AppUser> userManager)
+        public AppUsersService(IConfiguration config, UserManager<AppUser> userManager,
+            ISender emailSender, ITemplateRenderer emailTemplateRenderer)
         {
             this.config = config;
             _userManager = userManager;
+            this.emailSender = emailSender;
+            this.emailTemplateRenderer = emailTemplateRenderer;
         }
 
         public string GenerateBearerToken(AppUser user)
@@ -58,6 +65,31 @@ namespace Ensure.Web.Services
         }
 
         public async Task<int> GetUserTarget(string userName) => (await _userManager.FindByNameAsync(userName)).DailyTarget;
+
+        public async Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl)
+        {
+            const string template = @"
+<html>
+<head>
+<title>Password Reset Email</title>
+</head>
+<body>
+Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your password reset.
+</body>
+</html>
+";
+            var token = await _userManager.GeneratePasswordResetTokenAsync(u);
+            var encToken = System.Web.HttpUtility.UrlEncode(token);
+            var result = await new Email(emailTemplateRenderer, emailSender)
+                .To(u.Email, u.UserName)
+                .Subject("Password Reset Email")
+                .UsingTemplate(template, new
+                {
+                    UserName = u.UserName,
+                    ResetUrl = resetPasswordUrl + "?token=" + encToken
+                }).SendAsync();
+            
+        }
 
         public async Task SetUserTarget(short target, string userName)
         {

@@ -18,7 +18,7 @@ using System.Text;
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "Login")]
-    public class LoginActivity : Activity
+    public class LoginActivity : Activity, ILoadingStatedActivity
     {
         private EditText userNameEt, pwdEt;
         private Button submitBtn, registerBtn;
@@ -92,7 +92,7 @@ namespace Ensure.AndroidApp
         /// Sets the loading state for the UI
         /// </summary>
         /// <param name="isLoading">Should UI indicate loading state</param>
-        private void SetUiLoadingState(bool isLoading)
+        public void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
             registerBtn.Enabled = submitBtn.Enabled = userNameEt.Enabled = pwdEt.Enabled = !isLoading;

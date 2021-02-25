@@ -142,20 +142,5 @@ namespace Ensure.AndroidApp.Data
             }
             return false;
         }
-
-        private void HandleHttpError(HttpResponseMessage message)
-        {
-            if (!message.IsSuccessStatusCode)
-            {
-                if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    throw new AuthenticationException();
-                }
-                else
-                {
-                    // Do Something Else?
-                }
-            }
-        }
     }
 }

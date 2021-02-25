@@ -20,7 +20,7 @@ using static Ensure.AndroidApp.Helpers.ValidationHelpers;
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "Join Us")]
-    public class RegisterActivity : AppCompatActivity
+    public class RegisterActivity : AppCompatActivity, ILoadingStatedActivity
     {
         private ProgressBar topLoadingProgress;
         private Button submitBtn;
@@ -98,8 +98,9 @@ namespace Ensure.AndroidApp
                     return base.OnOptionsItemSelected(item);
             }
         }
+        
 
-        private void SetUiLoadingState(bool isLoading)
+        public void SetUiLoadingState(bool isLoading)
         {
             // disabled all fields & buttons
             View[] fields = { pwd, pwdVertification, userName, target, email, submitBtn };

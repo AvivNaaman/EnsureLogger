@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Net.Http;
+using System.Security.Authentication;
 using Android.Content;
 using Android.Net;
+using Android.Support.V7.App;
 using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp.Data
@@ -39,6 +42,29 @@ namespace Ensure.AndroidApp.Data
             var mgr = (ConnectivityManager)context.GetSystemService(Context.ConnectivityService);
             NetworkInfo netInfo = mgr.ActiveNetworkInfo;
             return netInfo != null && netInfo.IsConnected;
+        }
+
+
+
+        /// <summary>
+        /// Handles an HTTP error, thrown by the HttpClient used by the repository.
+        /// </summary>
+        /// <param name="message"></param>
+        protected void HandleHttpError(HttpResponseMessage message)
+        {
+            // auth exception - throw up.
+            if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new AuthenticationException();
+            }
+            // general http error - show alert
+            else
+            {
+                new AlertDialog.Builder(context)
+                    .SetMessage($"HTTP Error {message.StatusCode} - {message.ReasonPhrase}")
+                    .SetTitle("HTTP Error")
+                    .Create().Show();
+            }
         }
     }
 }

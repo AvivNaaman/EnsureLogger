@@ -12,5 +12,6 @@ namespace Ensure.Web.Services
         public string GenerateBearerToken(AppUser user);
         public Task<ApiUserInfo> GetUserInfo(string userName, string jwtToken);
         public ApiUserInfo GetUserInfo(AppUser u, string jwtToken);
+        public Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl);
     }
 }

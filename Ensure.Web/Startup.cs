@@ -45,7 +45,7 @@ namespace Ensure.Web
             }).AddJwtBearer(bearer =>
             {
                 bearer.SaveToken = true;
-                bearer.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+                bearer.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = false,
                     ValidateAudience = false,
@@ -61,6 +61,10 @@ namespace Ensure.Web
                 options.SignIn.RequireConfirmedEmail = false;
             })
 				.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+            services.AddFluentEmail("avivnaaman04@gmail.com")
+                .AddRazorRenderer()
+                .AddSendGridSender(Configuration["SendGrid:ApiKey"]);
 
             services.AddScoped<ITimeService, TimeService>();
             services.AddScoped<IEnsureService, EnsureService>();

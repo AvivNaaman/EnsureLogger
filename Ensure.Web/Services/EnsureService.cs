@@ -70,7 +70,6 @@ namespace Ensure.Web.Services
 
         public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userName, List<EnsureSyncModel> logs)
 		{
-			// TODO: Insert/Delete based on content
 			var u = await _userManager.FindByNameAsync(userName);
 
 			var addedEnsures = new List<EnsureLog>();
