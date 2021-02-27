@@ -134,7 +134,7 @@ namespace Ensure.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> PasswordResetFinish(string email, string token)
+        public async Task<IActionResult> ResetPasswordFinish(string email, string token)
         {
             var u = await _userManager.FindByEmailAsync(email);
             if (u is null) return NotFound();
