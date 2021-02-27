@@ -42,8 +42,9 @@ namespace Ensure.Web.Controllers
             if (!res.Succeeded)
             {
                 ModelState.AddModelError("", "Authentication failed.");
+                return View(model);
             }
-            return RedirectToAction("Logs");
+            return RedirectToAction("Logs", "Home");
         }
 
         /* Logout */
