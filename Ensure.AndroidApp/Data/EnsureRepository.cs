@@ -63,7 +63,6 @@ namespace Ensure.AndroidApp.Data
         public async Task<List<InternalEnsureLog>> GetLogs(DateTime date, bool forceCache = false)
         {
             List<InternalEnsureLog> ensures;
-            await OpenDbConnection();
             if (IsInternetConnectionAvailable() && !forceCache) // if there's internet AND not forcing cache, fetch & update cache:
             {
                 string dateQuery = date > DateTime.MinValue ? date.ToString(EnsureConstants.DateTimeUrlFormat) : string.Empty;
@@ -87,6 +86,8 @@ namespace Ensure.AndroidApp.Data
 
                 // cache all (delete old that are already there & insert the new ones):
                 var day = ensuresList.CurrentReturnedDate.Date;
+
+                await OpenDbConnection();
                 await db.RunInTransactionAsync(t =>
                 {
                     t.Execute("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
@@ -99,12 +100,14 @@ namespace Ensure.AndroidApp.Data
             {
                 // first in is on top (desc order)
                 date = date == DateTime.MinValue ? DateTime.Today : date;
+
+                await OpenDbConnection();
                 // query all between date & day after it
                 ensures = await db.QueryAsync<InternalEnsureLog>(
                     "SELECT * FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;",
                     date.AddDays(1).Ticks.ToString(), date.Ticks.ToString());
+                await CloseDbConnection();
             }
-            await CloseDbConnection();
             return ensures;
         }
 

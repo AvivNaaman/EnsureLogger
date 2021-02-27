@@ -38,7 +38,10 @@
     <EnableLLVM>false</EnableLLVM>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <BundleAssemblies>false</BundleAssemblies>
-    <AndroidUseAapt2>true</AndroidUseAapt2>
+    <AndroidUseAapt2>true</AndroidUseAapt2> 
+        <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
+        <AndroidLinkMode>None</AndroidLinkMode>
+        <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
     <MandroidI18n />
 <LangVersion>latest</LangVersion>
 <AndroidSupportedAbis>arm64-v8a;armeabi-v7a;x86;x86_64</AndroidSupportedAbis>
@@ -133,11 +136,11 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
     <AndroidResource Include="Resources\layout\activity_register.xml">
       <SubType></SubType>
-      <Generator></Generator>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\layout\activity_profile.xml">
       <SubType></SubType>
-      <Generator></Generator>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\progress_circle.xml">
       <SubType></SubType>
@@ -145,7 +148,7 @@
     </AndroidResource>
     <AndroidResource Include="Resources\layout\activity_history.xml">
       <SubType></SubType>
-      <Generator></Generator>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\ensure_taste_vanilla.png">
       <SubType></SubType>
@@ -153,7 +156,7 @@
     </AndroidResource>
     <AndroidResource Include="Resources\layout\ensure_taste_spinner_item.xml">
       <SubType></SubType>
-      <Generator></Generator>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\basic_border.xml">
       <SubType></SubType>
@@ -172,6 +175,10 @@
       <Generator></Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\time_outline.png">
+      <SubType></SubType>
+      <Generator></Generator>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\dialog_pwd_reset.xml">
       <SubType></SubType>
       <Generator></Generator>
     </AndroidResource>
@@ -212,7 +219,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\login_layout.xml">
+    <AndroidResource Include="Resources\layout\activity_login.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>

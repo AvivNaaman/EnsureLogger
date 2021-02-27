@@ -68,6 +68,11 @@ namespace Ensure.AndroidApp.Data
             return true;
         }
 
+        public Task RequestPasswordResetEmail(string email)
+        {
+            return http.GetAsync($"/api/Account/ResetPassword?email={email}");
+        }
+
         /// <summary>
         /// Loads the user info that is stored in the SharedPreferences
         /// </summary>

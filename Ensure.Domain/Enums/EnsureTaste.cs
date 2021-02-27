@@ -6,7 +6,6 @@ namespace Ensure.Domain.Enums
 	{
 		Vanilla,
 		Chocolate, // Disgusting. Sorry, Abbott
-		Coffee,
 		Strawberry
 	}
 }

@@ -21,7 +21,7 @@ namespace Ensure.AndroidApp
     public class LoginActivity : Activity, ILoadingStatedActivity
     {
         private EditText userNameEt, pwdEt;
-        private Button submitBtn, registerBtn;
+        private Button submitBtn, registerBtn, resetBtn;
         private ProgressBar topLoadingProgress;
 
         private UserService userService;
@@ -29,7 +29,7 @@ namespace Ensure.AndroidApp
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            SetContentView(Resource.Layout.login_layout);
+            SetContentView(Resource.Layout.activity_login);
 
             userService = new UserService(this);
 
@@ -43,6 +43,40 @@ namespace Ensure.AndroidApp
 
             registerBtn = FindViewById<Button>(Resource.Id.LoginRegisterBtn);
             registerBtn.Click += RegisterBtnClicked;
+
+            resetBtn = FindViewById<Button>(Resource.Id.LoginResetPwdBtn);
+            resetBtn.Click += ResetBtn_Click;
+        }
+
+        private void ResetBtn_Click(object sender, EventArgs e)
+        {
+            Dialog d = new Dialog(this);
+            d.SetContentView(Resource.Layout.dialog_pwd_reset);
+            d.SetCancelable(true);
+            d.SetTitle("Reset Password");
+            d.Create();
+            d.Show();
+            var btn = d.FindViewById<Button>(Resource.Id.ResetPwdDialogBtn);
+            var et = d.FindViewById<EditText>(Resource.Id.ResetPwdDialogEt);
+            btn.Click +=
+                (s, e) => DialogResetPwdBtn_Click(d, btn, et);
+        }
+
+        private async void DialogResetPwdBtn_Click(Dialog d, Button btn, EditText emailEt)
+        {
+            // get typed email, validate & post
+            var email = emailEt.Text;
+            if (ValidationHelpers.ValidateEmail(email, this))
+            {
+                btn.Enabled = false;
+                d.SetCancelable(false);
+                SetUiLoadingState(true);
+                await userService.RequestPasswordResetEmail(email);
+                d.Cancel();
+                SetUiLoadingState(false);
+                Toast.MakeText(this, "Done. Check your inbox to continue!", ToastLength.Long).Show();
+            }
+            else Toast.MakeText(this, "Invalid email address", ToastLength.Long);
         }
 
         /// <summary>
@@ -95,7 +129,8 @@ namespace Ensure.AndroidApp
         public void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
-            registerBtn.Enabled = submitBtn.Enabled = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+            resetBtn.Enabled = registerBtn.Enabled = submitBtn.Enabled
+                = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
         }
 
         // just prevent the Finish() call on default

@@ -60,6 +60,13 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center_horizontal"
+			android:text="Forgot Password?"
+			android:id="@+id/LoginResetPwdBtn"/>
+		
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal"
 			android:paddingHorizontal="41sp"
 			android:text="@string/LoginRegisterBtnText"
 			android:id="@+id/LoginRegisterBtn"/>
