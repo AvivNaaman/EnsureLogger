@@ -37,7 +37,7 @@ namespace Ensure.Web
                     Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-
+            services.AddHttpContextAccessor();
 
             services.AddAuthentication(auth =>
             {
@@ -62,7 +62,7 @@ namespace Ensure.Web
             })
 				.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
-            services.AddFluentEmail("avivnaaman04@gmail.com")
+            services.AddFluentEmail(Configuration["SendGrid:FromAddress"])
                 .AddRazorRenderer()
                 .AddSendGridSender(Configuration["SendGrid:ApiKey"]);
 
@@ -73,8 +73,8 @@ namespace Ensure.Web
 
             services.ConfigureApplicationCookie(cookie =>
             {
-                cookie.LoginPath = "/Login";
-                cookie.LogoutPath = "/Logout";
+                cookie.LoginPath = "/Account/Login";
+                cookie.LogoutPath = "/Account/Logout";
             });
 
             services.AddAntiforgery();

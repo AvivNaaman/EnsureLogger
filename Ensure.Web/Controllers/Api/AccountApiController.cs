@@ -25,20 +25,20 @@ namespace Ensure.Web.Controllers
     public class AccountApiController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IAppUsersService appUsersService;
+        private readonly IAppUsersService _appUsersService;
 
         public AccountApiController(UserManager<AppUser> userManager
             , IAppUsersService appUsersService)
         {
             _userManager = userManager;
-            this.appUsersService = appUsersService;
+            this._appUsersService = appUsersService;
         }
 
         [HttpGet]
         [Route("GetInfo")]
         public async Task<ActionResult<ApiUserInfo>> GetInfo()
         {
-            return await appUsersService.GetUserInfo(User.Identity.Name, null);
+            return await _appUsersService.GetUserInfo(User.Identity.Name, null);
         }
 
         [HttpGet]
@@ -49,8 +49,8 @@ namespace Ensure.Web.Controllers
             var u = await _userManager.FindByNameAsync(username);
             if (await _userManager.CheckPasswordAsync(u, password))
             {
-                string jwtToken = appUsersService.GenerateBearerToken(u);
-                return new ApiResponse<ApiUserInfo>(appUsersService.GetUserInfo(u, jwtToken));
+                string jwtToken = _appUsersService.GenerateBearerToken(u);
+                return new ApiResponse<ApiUserInfo>(_appUsersService.GetUserInfo(u, jwtToken));
             }
             else
             {
@@ -58,19 +58,19 @@ namespace Ensure.Web.Controllers
             }
         }
 
-        [Obsolete("Should be replaced by GetInfo")]
+        [Obsolete("Should be replaced by Get/SetInfo")]
         [Route("GetTarget")]
         [HttpGet]
         public async Task<ActionResult<int>> GetTarget()
         {
-            return await appUsersService.GetUserTarget(User.Identity.Name);
+            return await _appUsersService.GetUserTarget(User.Identity.Name);
         }
 
         [Route("SetTarget")]
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> SetTarget(short target)
         {
-            await appUsersService.SetUserTarget(target, User.Identity.Name);
+            await _appUsersService.SetUserTarget(target, User.Identity.Name);
             return new ApiResponse();
         }
 
@@ -95,13 +95,15 @@ namespace Ensure.Web.Controllers
             else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res.Errors.Select(ie => ie.Description))));
         }
 
-        [Route("PasswordReset")]
+        [Route("ResetPassword")]
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<ActionResult> PasswordReset(string email)
+        [HttpGet]
+        public async Task<ActionResult> ResetPassword(string email)
         {
+            var link = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
+                   + "/Account/ResetPasswordFinish";
             var u = await _userManager.FindByEmailAsync(email);
-            await appUsersService.SendPasswordResetEmail(u,  Url.ActionLink("PasswordResetFinish", "Home"));
+            await _appUsersService.SendPasswordResetEmail(u, link);
             return Ok();
         }
     }

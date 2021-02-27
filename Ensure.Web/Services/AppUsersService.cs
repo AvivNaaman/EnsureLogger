@@ -78,16 +78,23 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
 </body>
 </html>
 ";
+            const string subj = "Password Reset Email";
             var token = await _userManager.GeneratePasswordResetTokenAsync(u);
             var encToken = System.Web.HttpUtility.UrlEncode(token);
+            var encEmail = System.Web.HttpUtility.UrlEncode(u.Email);
             var result = await new Email(emailTemplateRenderer, emailSender)
                 .To(u.Email, u.UserName)
-                .Subject("Password Reset Email")
+                .SetFrom(config["SendGrid:FromAddress"], config["SendGrid:FromName"])
+                .Subject(subj)
                 .UsingTemplate(template, new
                 {
                     UserName = u.UserName,
-                    ResetUrl = resetPasswordUrl + "?token=" + encToken
+                    Email = u.Email,
+                    ResetUrl = resetPasswordUrl + "?token=" + encToken + "&email=" + encEmail
                 }).SendAsync();
+
+            if (!result.Successful)
+                throw new Exception(result.ErrorMessages.First());
             
         }
 
