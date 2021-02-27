@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,20 @@ namespace Ensure.Web
                 cookie.LogoutPath = "/Account/Logout";
             });
 
+            services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
+                {
+                    Title = "Ensure Logger API",
+                    Description = "The API fot the cross-platform drink logger",
+                    License = new OpenApiLicense {
+                        Name = "MIT License",
+                        Url = new Uri("https://opensource.org/licenses/MIT"),
+                    },
+                    Version = "v1"
+                });
+            });
+
             services.AddAntiforgery();
 
             services.AddControllersWithViews();
@@ -98,14 +113,6 @@ namespace Ensure.Web
             }
             app.UseHttpsRedirection();
 
-            // Allow .apk downloading
-            FileExtensionContentTypeProvider contentTypes = new();
-            contentTypes.Mappings[".apk"] = "application/vnd.android.package-archive";
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                ContentTypeProvider = contentTypes
-            });
-
             app.UseRouting();
 
             app.UseAuthentication();
@@ -116,6 +123,13 @@ namespace Ensure.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+
+
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ensure Logger API");
             });
         }
     }

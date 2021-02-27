@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ensure.Web.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AccountController : Controller
     {
         private SignInManager<AppUser> _signInManager;

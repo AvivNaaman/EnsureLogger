@@ -24,6 +24,7 @@ namespace Ensure.Web.Controllers
     /// </summary>
     [Authorize]
     [Route("/")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
         private readonly SignInManager<AppUser> _signInManager;
