@@ -28,5 +28,8 @@
     <string name="ProfileTitle">Profile</string>
     <string name="ProfileSaveTargetBtn">Save</string>
     <string name="ProfileTargetHint">Your Daily Target</string>
-    
+    <!-- Notification (FOR CODE!) -->
+    <string name="EnsureNotificationChannelId">EnsureNotificationChannel</string>
+    <string name="EnsureNotificationChannelName">Ensure Notifications</string>
+    <string name="EnsureNotificationChannelDesc">We will use that channel to remind you that you should drink.</string>
 </resources>

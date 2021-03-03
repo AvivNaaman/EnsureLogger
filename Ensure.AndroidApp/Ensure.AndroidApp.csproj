@@ -96,12 +96,11 @@
     <Compile Include="Data\BaseService.cs" />
     <Compile Include="Activities\HistoryActivity.cs" />
     <Compile Include="BroadcastReceivers\NetStateReceiver.cs" />
-    <Compile Include="Helpers\NotificationHelper.cs" />
-    <Compile Include="EnsureAndroidConstants.cs" />
-    <Compile Include="Helpers\NotificationWorker.cs" />
     <Compile Include="Adapters\EnsureTasteSpinnerAdapter.cs" />
     <Compile Include="Data\EnsureSyncState.cs" />
     <Compile Include="Activities\ILoadingStatedActivity.cs" />
+    <Compile Include="Helpers\NotificationHelper.cs" />
+    <Compile Include="BroadcastReceivers\NotificationReceiver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -204,9 +203,6 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="sqlite-net-pcl">
       <Version>1.7.335</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Arch.Work.Runtime">
-      <Version>1.0.0.3</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
       <Version>28.0.0.3</Version>
