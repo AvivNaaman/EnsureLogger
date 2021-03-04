@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Android.Content;
@@ -33,6 +34,8 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         private SQLiteAsyncConnection db;
 
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
+
         /// <summary>
         /// Constructs a new repository.
         /// </summary>
@@ -41,17 +44,16 @@ namespace Ensure.AndroidApp.Data
         {
         }
 
-        private async Task OpenDbConnection()
+        private void OpenDbConnection()
         {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Personal))) Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Personal));
-            db = new SQLiteAsyncConnection(path);
-            await db.CreateTableAsync<InternalEnsureLog>();
+            db = new SQLiteAsyncConnection(dbPath);
+            db.CreateTableAsync<InternalEnsureLog>().GetAwaiter().GetResult();
         }
 
-        private async Task CloseDbConnection()
+        private void CloseDbConnection()
         {
-            await db.CloseAsync();
+            db.CloseAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -87,26 +89,28 @@ namespace Ensure.AndroidApp.Data
                 // cache all (delete old that are already there & insert the new ones):
                 var day = ensuresList.CurrentReturnedDate.Date;
 
-                await OpenDbConnection();
+                OpenDbConnection();
                 await db.RunInTransactionAsync(t =>
                 {
                     t.Execute("DELETE FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;", day.AddDays(1).Ticks.ToString(), day.Ticks.ToString());
                     t.InsertAll(ensures);
                 });
-                await CloseDbConnection();
+                CloseDbConnection();
 
             }
-            else // if there is no internet, pull from cache:
+            else // if there is no internet (or cache forced!), pull from cache:
             {
                 // first in is on top (desc order)
                 date = date == DateTime.MinValue ? DateTime.Today : date;
 
-                await OpenDbConnection();
+                OpenDbConnection();
                 // query all between date & day after it
                 ensures = await db.QueryAsync<InternalEnsureLog>(
                     "SELECT * FROM EnsureLogs WHERE Logged < ? AND ? <= Logged;",
                     date.AddDays(1).Ticks.ToString(), date.Ticks.ToString());
-                await CloseDbConnection();
+                // do not return "removed" ones - these are "pending removal"
+                ensures = ensures.Where(l => l.SyncState != EnsureSyncState.ToRemove).ToList();
+                CloseDbConnection();
             }
             return ensures;
         }
@@ -147,15 +151,15 @@ namespace Ensure.AndroidApp.Data
                     UserId = ((EnsureApplication)context.ApplicationContext).UserInfo.Id
                 };
             }
-            await OpenDbConnection();
+            OpenDbConnection();
             await db.InsertAsync(log);
-            await CloseDbConnection();
+            CloseDbConnection();
             return log;
         }
 
         public async Task RemoveLogAsync(string logId)
         {
-            await OpenDbConnection();
+            OpenDbConnection();
             if (IsInternetConnectionAvailable())
             {
                 using (var res = await http.PostAsync($"/api/Ensure/RemoveLog?id={logId}")) // remove from remote
@@ -180,7 +184,7 @@ namespace Ensure.AndroidApp.Data
                     await db.UpdateAsync(toRemove);
                 }
             }
-            await CloseDbConnection();
+            CloseDbConnection();
         }
 
         /// <summary>
@@ -190,11 +194,10 @@ namespace Ensure.AndroidApp.Data
         {
             if (IsInternetConnectionAvailable())
             {
-                await OpenDbConnection();
+                OpenDbConnection();
                 // query all unsynced on local db
                 var toPush = await db.Table<InternalEnsureLog>()
                     .Where(l => l.SyncState != EnsureSyncState.Synced).ToListAsync();
-
                 if (toPush.Count <= 0) return; // nothing to push? skip.
 
                 // Build model for server
@@ -210,9 +213,9 @@ namespace Ensure.AndroidApp.Data
                 // post all & hope for good
                 var content =
                     new StringContent(JsonConvert.SerializeObject(toPost),
-                    System.Text.Encoding.UTF8);
+                    System.Text.Encoding.UTF8, MediaTypeNames.Application.Json);
 
-                using (var res = await http.PostAsync("/api/Ensures/SyncLogs", content))
+                using (var res = await http.PostAsync("/api/Ensure/SyncLogs", content))
                 {
                     if (!res.IsSuccessStatusCode)
                     {
@@ -230,7 +233,7 @@ namespace Ensure.AndroidApp.Data
                         c.InsertAll(toInsert);
                     });
                 }
-                await CloseDbConnection();
+                CloseDbConnection();
             }
         }
 
@@ -254,9 +257,9 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         public async Task ClearAllCache()
         {
-            await OpenDbConnection();
+            OpenDbConnection();
             await db.Table<InternalEnsureLog>().DeleteAsync();
-            await CloseDbConnection();
+            CloseDbConnection();
         }
     }
 }

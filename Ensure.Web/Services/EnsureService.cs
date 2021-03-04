@@ -85,8 +85,15 @@ namespace Ensure.Web.Services
 					_dbContext.Logs.Remove(l.ToSync);
 			});
 
-			await _dbContext.SaveChangesAsync();
-
+			try
+			{
+				await _dbContext.SaveChangesAsync();
+			}
+			catch (DbUpdateException)
+            {
+				// TODO: Do Something?
+				throw;
+            }
 			return addedEnsures;
 		}
     }

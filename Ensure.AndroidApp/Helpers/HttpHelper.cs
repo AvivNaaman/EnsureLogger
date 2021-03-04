@@ -7,12 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Ensure.AndroidApp.Helpers
 {
-	// TODO: Move to GetJsonAsync<TResult> & PostJsonAsync<TResult>
+	// TODO: Move to GetJsonAsync<TResult> & PostJsonAsync<TResult>?
 	public class HttpHelper
 	{
 		public Uri BaseUrl { get; } = new Uri("https://ensurelog.azurewebsites.net");
@@ -31,7 +32,7 @@ namespace Ensure.AndroidApp.Helpers
 			client.BaseAddress = BaseUrl;
 			// accept json only
 			client.DefaultRequestHeaders.Accept.Clear();
-			client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+			client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 			// set auth header if user logged in
 			if (app.UserInfo != null)
 			{

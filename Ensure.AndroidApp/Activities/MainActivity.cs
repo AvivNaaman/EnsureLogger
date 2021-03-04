@@ -246,7 +246,7 @@ namespace Ensure.AndroidApp
 
             // update logs & target & progress - force use of cache for nice start (won't block for long, I hope)
             var l = await ensureService.GetLogs(DateTime.MinValue, true);
-            currentProgress = l.Count;
+            currentProgress = l.Count; // exclude all the requires deletion ones
             UpdateTargetUi();
 
             // register network broadcast receiver
@@ -256,7 +256,6 @@ namespace Ensure.AndroidApp
             RegisterReceiver(netStateReceiver, netFilter);
 
             helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
-            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
         }
 
         /// <summary>
