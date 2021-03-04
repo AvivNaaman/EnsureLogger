@@ -51,7 +51,7 @@ namespace Ensure.Web.Controllers
         /// <returns>The CREATED ensures</returns>
 		[Route("SyncLogs")]
 		[HttpPost]
-		public async Task<ActionResult<List<EnsureLog>>> SyncLogs([FromForm] List<EnsureSyncModel> toSync)
+		public async Task<ActionResult<List<EnsureLog>>> SyncLogs(List<EnsureSyncModel> toSync)
         {
 			return await _ensureService.SyncEnsuresAsync(User.Identity.Name, toSync);
         }
