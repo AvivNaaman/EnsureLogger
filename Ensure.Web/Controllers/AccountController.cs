@@ -161,7 +161,7 @@ namespace Ensure.Web.Controllers
                 model.NewPassword = model.NewPasswordVertification = string.Empty;
                 return View(model);
             }
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction("Logs", "Home");
         }
         #endregion
     }

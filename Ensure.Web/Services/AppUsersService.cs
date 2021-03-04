@@ -84,7 +84,7 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
             var encEmail = System.Web.HttpUtility.UrlEncode(u.Email);
             var result = await new Email(emailTemplateRenderer, emailSender)
                 .To(u.Email, u.UserName)
-                .SetFrom(config["SendGrid:FromAddress"], config["SendGrid:FromName"])
+                .SetFrom(config["SendGrid:FromAddress"], "Ensure Logger")
                 .Subject(subj)
                 .UsingTemplate(template, new
                 {
