@@ -101,6 +101,7 @@
     <Compile Include="Activities\ILoadingStatedActivity.cs" />
     <Compile Include="Helpers\NotificationHelper.cs" />
     <Compile Include="BroadcastReceivers\NotificationReceiver.cs" />
+    <Compile Include="BroadcastReceivers\BootReceiver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

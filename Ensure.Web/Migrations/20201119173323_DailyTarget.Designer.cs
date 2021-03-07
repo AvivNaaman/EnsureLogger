@@ -55,10 +55,10 @@ namespace Ensure.Web.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<short>("DailyTarget")
+                    b.Property<int>("DailyTarget")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("smallint")
-                        .HasDefaultValue((short)2);
+                        .HasDefaultValue((int)2);
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -93,10 +93,10 @@ namespace Ensure.Web.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<short>("TimeZone")
+                    b.Property<int>("TimeZone")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("smallint")
-                        .HasDefaultValue((short)2);
+                        .HasDefaultValue((int)2);
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");

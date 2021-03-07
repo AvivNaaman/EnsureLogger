@@ -24,9 +24,10 @@ namespace Ensure.AndroidApp
     {
         private ProgressBar topLoadingProgress;
         private Button submitBtn;
+        // fields
         private EditText pwd, pwdVertification, userName, email, target;
-
         private UserService userService;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -39,7 +40,7 @@ namespace Ensure.AndroidApp
             submitBtn = FindViewById<Button>(Resource.Id.RegisterBtnGo);
             submitBtn.Click += SubmitBtn_Click;
 
-            // fields
+            // get field references
             pwd = FindViewById<EditText>(Resource.Id.RegisterPasswordEt);
             pwdVertification = FindViewById<EditText>(Resource.Id.RegisterPasswordVertificationEt);
             userName = FindViewById<EditText>(Resource.Id.RegisterUserNameEt);
@@ -49,6 +50,9 @@ namespace Ensure.AndroidApp
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
         }
 
+        /// <summary>
+        /// Event handler for submit button's click
+        /// </summary>
         private async void SubmitBtn_Click(object sender, EventArgs e)
         {
             if (!ValidateForm()) return;
@@ -56,7 +60,7 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(true);
 
             if (await userService.RegiserUser(userName.Text, email.Text,
-                pwd.Text, pwdVertification.Text, short.Parse(target.Text)))
+                pwd.Text, pwdVertification.Text, int.Parse(target.Text)))
             {
                 SetResult(Result.Ok);
                 Finish();
@@ -99,7 +103,6 @@ namespace Ensure.AndroidApp
             }
         }
         
-
         public void SetUiLoadingState(bool isLoading)
         {
             // disabled all fields & buttons

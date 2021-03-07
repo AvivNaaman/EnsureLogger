@@ -47,6 +47,7 @@ namespace Ensure.AndroidApp
 
             ensureRepo = new EnsureRepository(this);
 
+            #region RvSetup
             // Create your application here
             var mLayoutManager = new LinearLayoutManager(this);
 
@@ -61,6 +62,7 @@ namespace Ensure.AndroidApp
             // Touch helper (to handle item swipes)
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(logsRvTouchHelper);
             itemTouchHelper.AttachToRecyclerView(logsRv);
+            #endregion
 
             prevBtn = FindViewById<Button>(Resource.Id.HistoryPrevBtn);
             prevBtn.Click += PrevBtn_Click;
@@ -79,24 +81,27 @@ namespace Ensure.AndroidApp
             await UpdateDate(DateTime.Today);
         }
 
+        #region Handlers
+        /// <summary>
+        /// Handler for next day button click
+        /// </summary>
         private async void NextBtn_Click(object sender, EventArgs e)
         {
             await UpdateDate(displayedDate.AddDays(1)); // next day
         }
 
+        /// <summary>
+        /// Handler for previous day button click
+        /// </summary>
         private async void PrevBtn_Click(object sender, EventArgs e)
         {
             await UpdateDate(displayedDate.AddDays(-1)); // prev day
         }
 
-        private async Task UpdateDate(DateTime newDate)
-        {
-            // update value & UI, then call update list
-            displayedDate = newDate;
-            displayedDateTv.Text = newDate.ToString("dd/MM/yyyy");
-            await UpdateList();
-        }
-
+        /// <summary>
+        /// Handler for item swipe
+        /// </summary>
+        /// <param name="viewHolder"></param>
         private async void LogsRv_ItemSwiped(RecyclerView.ViewHolder viewHolder)
         {
 
@@ -110,7 +115,16 @@ namespace Ensure.AndroidApp
             await ensureRepo.RemoveLogAsync(vh.LogId);
             SetUiLoadingState(false);
         }
+        #endregion
 
+        #region Data
+        private async Task UpdateDate(DateTime newDate)
+        {
+            // update value & UI, then call update list
+            displayedDate = newDate;
+            displayedDateTv.Text = newDate.ToString("dd/MM/yyyy");
+            await UpdateList();
+        }
         private async Task UpdateList()
         {
             // fetch & put in the list
@@ -120,12 +134,16 @@ namespace Ensure.AndroidApp
             ensures.AddRange(logs);
             // notify change to the UI
             ensuresRvAdapter.NotifyDataSetChanged();
-            // show empty list message if it's gone
+            // show empty list message if no logs for the date
             emptyListMessage.Visibility = (
                 logs.Count > 0 ? ViewStates.Gone : ViewStates.Visible);
             SetUiLoadingState(false);
         }
+        #endregion
 
+        /// <summary>
+        /// Handler for home button click
+        /// </summary>
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
             switch (item.ItemId)

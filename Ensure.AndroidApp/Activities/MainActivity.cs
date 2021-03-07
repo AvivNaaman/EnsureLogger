@@ -29,28 +29,36 @@ namespace Ensure.AndroidApp
     [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, ILoadingStatedActivity
     {
-        // TODO: Move to smart props?
         private List<InternalEnsureLog> ensures = new List<InternalEnsureLog>();
 
-        private ProgressBar horizontalTopProgress;
+        #region WidgetRefernces
+        // shell UI (swipe refresh & progress bar)
+        private ProgressBar topLoadingProgress;
+        private SwipeRefreshLayout mainLayout;
+
+        // quick add UI
         private Spinner tasteSpinner;
         private Button addBtn;
-        private SwipeRefreshLayout refreshLayout;
 
-        private TextView helloUserTv;
+        // user "Hello" message
+        private TextView topHelloMessage;
 
-        private EnsureRepository ensureService;
+        // service
+        private EnsureRepository ensureRepo;
         private UserService userService;
 
-        private ProgressBar todayProgress;
+        // progress bar & inner text
+        private ProgressBar mainProgressBar;
         private TextView todayProgressTv;
 
-        private int currentProgress;
+        private int todayProgress; // current progress
 
-        private NetStateReceiver netStateReceiver;
+        private NetStateReceiver netStateReceiver; // network state listener
 
-        private ImageButton historyBtn, profileBtn;
+        private ImageButton historyBtn, profileBtn; // profile/history image buttons
+        #endregion
 
+        #region Lifecycle
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -61,7 +69,7 @@ namespace Ensure.AndroidApp
 
 
             // Hello, UserName message
-            helloUserTv = FindViewById<TextView>(Resource.Id.HelloUserTv);
+            topHelloMessage = FindViewById<TextView>(Resource.Id.HelloUserTv);
 
             // Taste picker
             tasteSpinner = FindViewById<Spinner>(Resource.Id.EnsureTasteSpinner);
@@ -73,13 +81,13 @@ namespace Ensure.AndroidApp
             addBtn.Click += AddBtn_Click;
 
             // Top progress bar
-            horizontalTopProgress = FindViewById<ProgressBar>(Resource.Id.MainActivityTopProgress);
+            topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.MainActivityTopProgress);
 
             // Swipe to refresh layout
-            refreshLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.MainActivityRefreshableLayout);
-            refreshLayout.Refresh += MainActivity_Refresh;
+            mainLayout = FindViewById<SwipeRefreshLayout>(Resource.Id.MainActivityRefreshableLayout);
+            mainLayout.Refresh += MainActivity_Refresh;
 
-            todayProgress = FindViewById<ProgressBar>(Resource.Id.TodayProgressBar);
+            mainProgressBar = FindViewById<ProgressBar>(Resource.Id.TodayProgressBar);
             todayProgressTv = FindViewById<TextView>(Resource.Id.MainProgressTv);
 
             historyBtn = FindViewById<ImageButton>(Resource.Id.HistoryImageBtn);
@@ -89,12 +97,60 @@ namespace Ensure.AndroidApp
 
         }
 
+        protected override async void OnResume()
+        {
+            base.OnResume();
+            // init services & load data
+            ensureRepo = new EnsureRepository(this);
+            userService = new UserService(this);
+            userService.LoadUserInfoFromSp();
+
+            if (!userService.IsUserLoggedIn)
+            {
+                StartLoginActivity();
+                return;
+            }
+
+            // update logs & target & progress - force use of cache for nice start (won't block for long, I hope)
+            var l = await ensureRepo.GetLogs(DateTime.MinValue, true);
+            todayProgress = l.Count; // exclude all the requires deletion ones
+            UpdateProgressDiaplay();
+
+            // register network broadcast receiver
+            netStateReceiver = new NetStateReceiver();
+            IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
+            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
+            RegisterReceiver(netStateReceiver, netFilter);
+
+            topHelloMessage.Text = $"Hello, {userService.CurrentUser.UserName}";
+        }
+
+
+        protected override void OnPause()
+        {
+            if (netStateReceiver != null)
+            {
+                UnregisterReceiver(netStateReceiver);
+                netStateReceiver.Dispose();
+                netStateReceiver = null;
+            }
+            base.OnPause();
+        }
+        #endregion
+
+        #region EventHandlers
+        /// <summary>
+        /// Profile button click handler
+        /// </summary>
         private void ProfileBtn_Click(object sender, EventArgs e)
         {
             Intent i = new Intent(this, typeof(ProfileActivity));
             StartActivity(i);
         }
 
+        /// <summary>
+        /// History button click handler
+        /// </summary>
         private void HistoryBtn_Click(object sender, EventArgs e)
         {
             Intent i = new Intent(this, typeof(HistoryActivity));
@@ -108,13 +164,13 @@ namespace Ensure.AndroidApp
         {
             try
             {
-                await RefreshTargetProgress();
+                await RefreshData();
             }
             catch (AuthenticationException)
             {
                 StartLoginActivity();
             }
-            refreshLayout.Refreshing = false;
+            mainLayout.Refreshing = false;
         }
 
         /// <summary>
@@ -126,12 +182,12 @@ namespace Ensure.AndroidApp
             // add to server (if online) & cache
             try
             {
-                var result = await ensureService.AddLogAsync((EnsureTaste)tasteSpinner.SelectedItemPosition);
+                var result = await ensureRepo.AddLogAsync((EnsureTaste)tasteSpinner.SelectedItemPosition);
                 if (result != null)
                 {
                     Toast.MakeText(this, "Log Added", ToastLength.Long).Show();
-                    currentProgress++;
-                    UpdateTargetUi();
+                    todayProgress++;
+                    UpdateProgressDiaplay();
                 }
             }
             catch (AuthenticationException)
@@ -141,37 +197,88 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(false);
         }
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+
+        /// <summary>
+        /// Network state changes event handler
+        /// </summary>
+        /// <param name="isNetConnected"></param>
+        private async void NetworkStateChanged(bool isNetConnected, bool prevState)
         {
-            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            if (prevState != isNetConnected) // connectivity (connected/not connected) changed
+            {
+                if (isNetConnected) // offline -> online: SYNC!
+                {
+                    SetUiLoadingState(true);
+                    try
+                    {
+                        await ensureRepo.SyncEnsures();
+                        await RefreshData();
+                    }
+                    catch (AuthenticationException)
+                    {
+                        StartLoginActivity();
+                    }
+                    SetUiLoadingState(false);
+                }
+                else // online -> offline
+                {
 
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+                }
+            }
         }
+        #endregion
 
+        #region Data
         /// <summary>
         /// Refreshes the Target and today's progress
         /// </summary>
-        private async Task RefreshTargetProgress()
+        private async Task RefreshData()
         {
             SetUiLoadingState(true);
             // refresh today's logs (+history)
             await userService.RefreshInfo();
-            var logs = await ensureService.GetLogs(DateTime.MinValue);
-            currentProgress = logs.Count;
-            UpdateTargetUi();
+            var logs = await ensureRepo.GetLogs(DateTime.MinValue);
+            todayProgress = logs.Count;
+            UpdateProgressDiaplay();
             SetUiLoadingState(false); return;
         }
 
         /// <summary>
+        /// Logs the user out and turns him to the login
+        /// </summary>
+        private void Logout()
+        {
+            SetUiLoadingState(true);
+            StartLoginActivity(); // exit to login activity
+            userService.LogUserOut();
+            ensures.Clear(); // Remove ensures & any other previous user data on UI
+            mainProgressBar.Progress = 0;
+            SetUiLoadingState(false);
+        }
+        #endregion
+
+        #region Ui
+        /// <summary>
+        /// Changed the UI to match the loading state
+        /// </summary>
+        /// <param name="isLoading"></param>
+        public void SetUiLoadingState(bool isLoading)
+        {
+            topLoadingProgress.Indeterminate = isLoading; // "disabled"
+            mainLayout.Enabled = addBtn.Enabled = !isLoading;
+        }
+
+
+        /// <summary>
         /// Updates the target and the progress of today 
         /// </summary>
-        private void UpdateTargetUi()
+        private void UpdateProgressDiaplay()
         {
-            var target = userService?.UserInfo?.DailyTarget;
+            var target = userService?.CurrentUser?.DailyTarget;
             if (!target.HasValue || target < 0) target = 0;
-            todayProgressTv.Text = currentProgress + "/" + target.Value;
-            todayProgress.Progress = currentProgress;
-            todayProgress.Max = target.Value;
+            todayProgressTv.Text = todayProgress + "/" + target.Value;
+            mainProgressBar.Progress = todayProgress;
+            mainProgressBar.Max = target.Value;
         }
 
         /// <summary>
@@ -182,18 +289,9 @@ namespace Ensure.AndroidApp
             var intent = new Intent(this, typeof(LoginActivity));
             StartActivityForResult(intent, (int)ActivityRequestCodes.Login);
         }
+        #endregion
 
-        /// <summary>
-        /// Changed the UI to match the loading state
-        /// </summary>
-        /// <param name="isLoading"></param>
-        public void SetUiLoadingState(bool isLoading)
-        {
-            horizontalTopProgress.Indeterminate = isLoading; // "disabled"
-            refreshLayout.Enabled = addBtn.Enabled = !isLoading;
-        }
-
-        /* Options Menu */
+        #region Menu
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             MenuInflater.Inflate(Resource.Menu.main_menu, menu);
@@ -209,103 +307,28 @@ namespace Ensure.AndroidApp
                     Logout();
                     break;
                 case Resource.Id.TestNotify:
-                    NotificationHelper.ScheduleEnsureCheckNotification(this, DateTime.Now.AddSeconds(10));
+                    NotificationHelper.ScheduleEnsureCheckNotification(this, DateTime.Now.AddMinutes(0.2));
                     break;
                 default:
                     break;
             }
             return base.OnOptionsItemSelected(item);
         }
+        #endregion
 
-        /// <summary>
-        /// Logs the user out and turns him to the login
-        /// </summary>
-        private void Logout()
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
-            SetUiLoadingState(true);
-            StartLoginActivity(); // exit to login activity
-            userService.LogUserOut();
-            ensures.Clear(); // Remove ensures & any other previous user data on UI
-            todayProgress.Progress = 0;
-            SetUiLoadingState(false);
-        }
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        protected override async void OnResume()
-        {
-            base.OnResume();
-            // init services & load data
-            ensureService = new EnsureRepository(this);
-            userService = new UserService(this);
-            userService.LoadUserInfoFromSp();
-
-            if (!userService.IsUserLoggedIn)
-            {
-                StartLoginActivity();
-                return;
-            }
-
-            // update logs & target & progress - force use of cache for nice start (won't block for long, I hope)
-            var l = await ensureService.GetLogs(DateTime.MinValue, true);
-            currentProgress = l.Count; // exclude all the requires deletion ones
-            UpdateTargetUi();
-
-            // register network broadcast receiver
-            netStateReceiver = new NetStateReceiver();
-            IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
-            netStateReceiver.NetworkStateChanged += NetworkStateChanged;
-            RegisterReceiver(netStateReceiver, netFilter);
-
-            helloUserTv.Text = $"Hello, {userService.UserInfo.UserName}";
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
         /// <summary>
-        /// Network state changes event handler
+        /// Contains result codes for StartActivityForResult calls.
         /// </summary>
-        /// <param name="isNetConnected"></param>
-        private async void NetworkStateChanged(bool isNetConnected, bool prevState)
+        private enum ActivityRequestCodes
         {
-            if (prevState != isNetConnected) // connectivity (connected/not connected) changed
-            {
-                if (isNetConnected) // offline -> online: SYNC!
-                {
-                    SetUiLoadingState(true);
-                    try
-                    {
-                        await ensureService.SyncEnsures();
-                        await RefreshTargetProgress();
-                    }
-                    catch (AuthenticationException)
-                    {
-                        StartLoginActivity();
-                    }
-                    SetUiLoadingState(false);
-                }
-                else // online -> offline
-                {
-
-                }
-            }
-        }
-
-        protected override void OnPause()
-        {
-            if (netStateReceiver != null)
-            {
-                UnregisterReceiver(netStateReceiver);
-                netStateReceiver.Dispose();
-                netStateReceiver = null;
-            }
-            base.OnPause();
-        }
-
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
-        {
-        }
-
-        enum ActivityRequestCodes
-        {
-            Login,
-            History
+            Login
         }
 
     }

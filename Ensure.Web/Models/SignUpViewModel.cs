@@ -25,7 +25,7 @@ namespace Ensure.Web.Models
 		public string Email { get; set; }
 		[Required]
 		[Display(Name = "Your Daily Target (you can change later)")]
-		public short DailyTarget { get; set; }
-		public short TimeZone { get; set; } = 2;
+		public int DailyTarget { get; set; }
+		public int TimeZone { get; set; } = 2;
 	}
 }

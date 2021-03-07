@@ -104,7 +104,7 @@ namespace Ensure.Web.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateTarget([FromForm] short dailyTarget)
+        public async Task<IActionResult> UpdateTarget([FromForm] int dailyTarget)
         {
             if (dailyTarget > 0)
             {

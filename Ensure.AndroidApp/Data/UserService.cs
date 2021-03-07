@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,8 +13,8 @@ namespace Ensure.AndroidApp.Data
     public class UserService : BaseService
     {
 
-        const string SharedPrefernceName = "EnsureSp";
-        const string UserInfoSharedPreference = "UserInfo";
+        public const string SharedPrefernceName = "EnsureSp";
+        public const string UserInfoSharedPreference = "UserInfo";
 
         private ISharedPreferences sharedPreferences;
         private EnsureApplication application;
@@ -45,7 +46,7 @@ namespace Ensure.AndroidApp.Data
         }
 
         public async Task<bool> RegiserUser(string userName, string email, string password,
-            string pwdVertification, short target)
+            string pwdVertification, int target)
         {
             var model = new ApiSignupModel
             {
@@ -57,7 +58,7 @@ namespace Ensure.AndroidApp.Data
             };
 
             string data = JsonConvert.SerializeObject(model);
-            var content = new StringContent(data, Encoding.UTF8, "application/json");
+            var content = new StringContent(data, Encoding.UTF8, MediaTypeNames.Application.Json);
             var res = await http.PostAsync("/api/Account/Register", content);
 
             if (!res.IsSuccessStatusCode) return false;
@@ -73,6 +74,26 @@ namespace Ensure.AndroidApp.Data
             return http.GetAsync($"/api/Account/ResetPassword?email={email}");
         }
 
+
+        /// <summary>
+        /// Logs out the current user
+        /// </summary>
+        public void LogUserOut()
+        {
+            application.UserInfo = null;
+            SaveUserInfoToSp();
+        }
+
+        #region SharePreference
+        /// <summary>
+        /// Saves the current user info to the SharedPreferences
+        /// </summary>
+        public void SaveUserInfoToSp()
+        {
+            string json = JsonConvert.SerializeObject(application.UserInfo);
+            sharedPreferences.Edit().PutString(UserInfoSharedPreference, json).Commit();
+        }
+
         /// <summary>
         /// Loads the user info that is stored in the SharedPreferences
         /// </summary>
@@ -84,24 +105,7 @@ namespace Ensure.AndroidApp.Data
                 application.UserInfo = JsonConvert.DeserializeObject<ApiUserInfo>(userInfoJson);
             }
         }
-
-        /// <summary>
-        /// Logs out the current user
-        /// </summary>
-        public void LogUserOut()
-        {
-            application.UserInfo = null;
-            SaveUserInfoToSp();
-        }
-
-        /// <summary>
-        /// Saves the current user info to the SharedPreferences
-        /// </summary>
-        public void SaveUserInfoToSp()
-        {
-            string json = JsonConvert.SerializeObject(application.UserInfo);
-            sharedPreferences.Edit().PutString(UserInfoSharedPreference, json).Commit();
-        }
+        #endregion
 
         /// <summary>
         /// Refreshes the user's info and returns it.
@@ -122,8 +126,8 @@ namespace Ensure.AndroidApp.Data
             return info;
         }
 
-        public bool IsUserLoggedIn => UserInfo != null;
-        public ApiUserInfo UserInfo => application.UserInfo;
+        public bool IsUserLoggedIn => CurrentUser != null;
+        public ApiUserInfo CurrentUser => application.UserInfo;
 
         [Obsolete]
         /// <summary>
@@ -131,7 +135,7 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         /// <param name="target">The new target</param>
         /// <returns>Whether update succeeded</returns>
-        public async Task<bool> SetUserTarget(short target)
+        public async Task<bool> SetUserTarget(int target)
         {
             if (IsUserLoggedIn && IsInternetConnectionAvailable())
             {
@@ -141,11 +145,28 @@ namespace Ensure.AndroidApp.Data
                     HandleHttpError(res);
                     return false;
                 }
-                UserInfo.DailyTarget = target;
+                CurrentUser.DailyTarget = target;
                 SaveUserInfoToSp(); // save updates locally
                 return true;
             }
             return false;
+        }
+
+        public async Task SetInfo(ApiUserInfo newInfo)
+        {
+            if (IsUserLoggedIn && IsInternetConnectionAvailable())
+            {
+                var j = JsonConvert.SerializeObject(new { newInfo.DailyTarget });
+                var c = new StringContent(j, Encoding.UTF8, MediaTypeNames.Application.Json);
+                var res = await http.PostAsync($"/api/Account/SetInfo", c);
+                if (!res.IsSuccessStatusCode)
+                {
+                    HandleHttpError(res);
+                    return;
+                }
+                CurrentUser.DailyTarget = newInfo.DailyTarget;
+                SaveUserInfoToSp(); // save updates locally
+            }
         }
     }
 }

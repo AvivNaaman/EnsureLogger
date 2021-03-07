@@ -7,6 +7,6 @@ namespace Ensure.Domain.Models
 		public string Password { get; set; }
 		public string PasswordVertification { get; set; }
 		public string Email { get; set; }
-		public short DailyTarget { get; set; }
+		public int DailyTarget { get; set; }
 	}
 }

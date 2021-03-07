@@ -48,6 +48,11 @@ namespace Ensure.AndroidApp
             resetBtn.Click += ResetBtn_Click;
         }
 
+        #region Handlers
+        /// <summary>
+        /// Event handler for Reset Password button click
+        /// opens the reset password dialog
+        /// </summary>
         private void ResetBtn_Click(object sender, EventArgs e)
         {
             Dialog d = new Dialog(this);
@@ -62,19 +67,26 @@ namespace Ensure.AndroidApp
                 (s, e) => DialogResetPwdBtn_Click(d, btn, et);
         }
 
+        /// <summary>
+        /// Event handler for reset password dialog inner button click
+        /// Validates the entered email & sends the reset request to the server
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="btn"></param>
+        /// <param name="emailEt"></param>
         private async void DialogResetPwdBtn_Click(Dialog d, Button btn, EditText emailEt)
         {
             // get typed email, validate & post
             var email = emailEt.Text;
             if (ValidationHelpers.ValidateEmail(email, this))
             {
-                btn.Enabled = false;
-                d.SetCancelable(false);
+                btn.Enabled = false; // disable modal submit button
                 SetUiLoadingState(true);
-                await userService.RequestPasswordResetEmail(email);
-                d.Cancel();
+                d.SetCancelable(false); // prevent dialog closing
+                await userService.RequestPasswordResetEmail(email); // request password reset
+                d.Cancel(); // close dialog
                 SetUiLoadingState(false);
-                Toast.MakeText(this, "Done. Check your inbox to continue!", ToastLength.Long).Show();
+                Toast.MakeText(this, "Done. Check your inbox to continue.", ToastLength.Long).Show();
             }
             else Toast.MakeText(this, "Invalid email address", ToastLength.Long);
         }
@@ -84,7 +96,7 @@ namespace Ensure.AndroidApp
         /// </summary>
         private void RegisterBtnClicked(object sender, EventArgs e)
         {
-            // Start Register activity
+            // Start Register activity WITH result 
             var i = new Intent(this, typeof(RegisterActivity));
             StartActivityForResult(i, (int)ActivityResults.Register);
         }
@@ -94,12 +106,14 @@ namespace Ensure.AndroidApp
         /// </summary>
         private async void LoginBtnClicked(object sender, EventArgs e)
         {
+            // uname / password null check
             string username = userNameEt.Text, pwd = pwdEt.Text;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
             {
                 return;
             }
 
+            // try login
             SetUiLoadingState(true);
             var loginResult = await userService.LogUserIn(username, pwd);
             if (!loginResult.IsError) // login successful
@@ -116,16 +130,12 @@ namespace Ensure.AndroidApp
                     .SetTitle("Login failed")
                     .SetMessage(loginResult.ErrorMessage)
                     .SetCancelable(true)
-                    //.SetNegativeButton("Close", (sender, args) => ((AlertDialog)sender).Cancel())
                     .Create().Show();
             }
             SetUiLoadingState(false);
         }
+        #endregion
 
-        /// <summary>
-        /// Sets the loading state for the UI
-        /// </summary>
-        /// <param name="isLoading">Should UI indicate loading state</param>
         public void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
@@ -133,7 +143,7 @@ namespace Ensure.AndroidApp
                 = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
         }
 
-        // just prevent the Finish() call on default
+        // prevent the Finish() call by default so user won't "escape" login
         public override void OnBackPressed() { }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
@@ -141,7 +151,7 @@ namespace Ensure.AndroidApp
             switch ((ActivityResults)requestCode)
             {
                 case ActivityResults.Register:
-                    // if user registerted succesfully, go home
+                    // if user registerted succesfully, go to main activity (because he's logged in!)
                     if (resultCode == Result.Ok)
                     {
                         Finish();

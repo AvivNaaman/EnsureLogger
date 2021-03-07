@@ -6,21 +6,21 @@ namespace Ensure.Web.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<short>(
+            migrationBuilder.AlterColumn<int>(
                 name: "TimeZone",
                 table: "AspNetUsers",
                 type: "smallint",
                 nullable: false,
-                defaultValue: (short)2,
-                oldClrType: typeof(short),
+                defaultValue: (int)2,
+                oldClrType: typeof(int),
                 oldType: "smallint");
 
-            migrationBuilder.AddColumn<short>(
+            migrationBuilder.AddColumn<int>(
                 name: "DailyTarget",
                 table: "AspNetUsers",
                 type: "smallint",
                 nullable: false,
-                defaultValue: (short)2);
+                defaultValue: (int)2);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -29,14 +29,14 @@ namespace Ensure.Web.Migrations
                 name: "DailyTarget",
                 table: "AspNetUsers");
 
-            migrationBuilder.AlterColumn<short>(
+            migrationBuilder.AlterColumn<int>(
                 name: "TimeZone",
                 table: "AspNetUsers",
                 type: "smallint",
                 nullable: false,
-                oldClrType: typeof(short),
+                oldClrType: typeof(int),
                 oldType: "smallint",
-                oldDefaultValue: (short)2);
+                oldDefaultValue: (int)2);
         }
     }
 }

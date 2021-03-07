@@ -68,7 +68,7 @@ namespace Ensure.Web.Controllers
 
         [Route("SetTarget")]
         [HttpPost]
-        public async Task<ActionResult<ApiResponse>> SetTarget(short target)
+        public async Task<ActionResult<ApiResponse>> SetTarget(int target)
         {
             await _appUsersService.SetUserTarget(target, User.Identity.Name);
             return new ApiResponse();

@@ -50,14 +50,14 @@ namespace Ensure.AndroidApp
         private async void SaveTargetBtn_Click(object sender, EventArgs e)
         {
             SetUiLoadingState(true);
-            short parsedTarget;
-            if (string.IsNullOrWhiteSpace(target.Text) || (parsedTarget = short.Parse(target.Text)) <= 0)
+            int parsedTarget;
+            if (string.IsNullOrWhiteSpace(target.Text) || (parsedTarget = int.Parse(target.Text)) <= 0)
             {
                 ValidationHelpers.ShowErrorDialog("Please enter a valid target.", this);
             }
             else
             {
-                short prevTarget = userService.UserInfo.DailyTarget;
+                int prevTarget = userService.CurrentUser.DailyTarget;
                 if (!await userService.SetUserTarget(parsedTarget)) // TODO: Migrate to FULL user details update
                 {
                     target.Text = prevTarget.ToString(); // error
@@ -68,7 +68,7 @@ namespace Ensure.AndroidApp
 
         private void UpdateFromInfo()
         {
-            var info = userService.UserInfo;
+            var info = userService.CurrentUser;
             userName.Text = info.UserName;
             email.Text = info.Email;
             target.Text = info.DailyTarget.ToString();

@@ -88,7 +88,7 @@ namespace Ensure.Web.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<short>("TimeZone")
+                    b.Property<int>("TimeZone")
                         .HasColumnType("smallint");
 
                     b.Property<bool>("TwoFactorEnabled")

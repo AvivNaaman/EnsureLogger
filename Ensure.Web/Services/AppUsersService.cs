@@ -98,7 +98,7 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
             
         }
 
-        public async Task SetUserTarget(short target, string userName)
+        public async Task SetUserTarget(int target, string userName)
         {
             var u = await _userManager.FindByNameAsync(userName);
             u.DailyTarget = target;
