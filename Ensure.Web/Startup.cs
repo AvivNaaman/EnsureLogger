@@ -61,7 +61,7 @@ namespace Ensure.Web
             {
                 options.SignIn.RequireConfirmedEmail = false;
             })
-				.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             services.AddFluentEmail(Configuration["SendGrid:FromAddress"])
                 .AddRazorRenderer()
@@ -84,7 +84,8 @@ namespace Ensure.Web
                 {
                     Title = "Ensure Logger API",
                     Description = "The API fot the cross-platform drink logger",
-                    License = new OpenApiLicense {
+                    License = new OpenApiLicense
+                    {
                         Name = "MIT License",
                         Url = new Uri("https://opensource.org/licenses/MIT"),
                     },
@@ -94,7 +95,11 @@ namespace Ensure.Web
 
             services.AddAntiforgery();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+#if DEBUG
+                .AddRazorRuntimeCompilation()
+#endif
+                ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

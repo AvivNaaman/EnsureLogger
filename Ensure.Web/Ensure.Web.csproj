@@ -12,6 +12,9 @@
     <Content Remove="Data\Migrations\**" />
     <EmbeddedResource Remove="Data\Migrations\**" />
     <None Remove="Data\Migrations\**" />
+    <Content Remove="wwwroot\lib\bootstrap\.DS_Store" />
+    <Content Remove="wwwroot\lib\bootstrap\dist\.DS_Store" />
+    <Content Remove="wwwroot\lib\bootstrap\dist\css\.DS_Store" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\apk\" />
     <Folder Include="Views\Account\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

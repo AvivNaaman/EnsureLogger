@@ -27,16 +27,11 @@ namespace Ensure.Web.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
-        private readonly SignInManager<AppUser> _signInManager;
-        private readonly IAppUsersService appUsersService;
         private readonly IEnsureService _ensureService;
         private readonly UserManager<AppUser> _userManager;
 
-        public HomeController(SignInManager<AppUser> signInManager, IAppUsersService appUsersService,
-            IEnsureService ensureService, UserManager<AppUser> userManager)
+        public HomeController(IEnsureService ensureService, UserManager<AppUser> userManager)
         {
-            _signInManager = signInManager;
-            this.appUsersService = appUsersService;
             _ensureService = ensureService;
             _userManager = userManager;
         }
