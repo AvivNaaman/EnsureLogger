@@ -64,7 +64,8 @@ namespace Ensure.Web.Services
             };
         }
 
-        public async Task<int> GetUserTarget(string userName) => (await _userManager.FindByNameAsync(userName)).DailyTarget;
+        public async Task<int> GetUserTarget(string userName)
+            => (await _userManager.FindByNameAsync(userName)).DailyTarget;
 
         public async Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl)
         {
@@ -88,8 +89,8 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
                 .Subject(subj)
                 .UsingTemplate(template, new
                 {
-                    UserName = u.UserName,
-                    Email = u.Email,
+                    u.UserName,
+                    u.Email,
                     ResetUrl = resetPasswordUrl + "?token=" + encToken + "&email=" + encEmail
                 }).SendAsync();
 
@@ -102,7 +103,7 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
         {
             var u = await _userManager.FindByNameAsync(userName);
             u.DailyTarget = target;
-            await _userManager.UpdateAsync(u);
+            _ = await _userManager.UpdateAsync(u);
         }
     }
 }

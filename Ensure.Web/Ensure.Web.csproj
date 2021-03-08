@@ -15,6 +15,9 @@
     <Content Remove="wwwroot\lib\bootstrap\.DS_Store" />
     <Content Remove="wwwroot\lib\bootstrap\dist\.DS_Store" />
     <Content Remove="wwwroot\lib\bootstrap\dist\css\.DS_Store" />
+    <Content Remove="wwwroot\images\ensure_taste_chocolate.png" />
+    <Content Remove="wwwroot\images\ensure_taste_strawberry.png" />
+    <Content Remove="wwwroot\images\ensure_taste_vanilla.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +45,21 @@
 
   <ItemGroup>
     <Folder Include="Views\Account\" />
-    <Folder Include="Migrations\" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AndroidResource Include="wwwroot\images\ensure_taste_chocolate.png">
+      <SubType></SubType>
+      <Generator></Generator>
+    </AndroidResource>
+    <AndroidResource Include="wwwroot\images\ensure_taste_strawberry.png">
+      <SubType></SubType>
+      <Generator></Generator>
+    </AndroidResource>
+    <AndroidResource Include="wwwroot\images\ensure_taste_vanilla.png">
+      <SubType></SubType>
+      <Generator></Generator>
+    </AndroidResource>
+  </ItemGroup>
 </Project>

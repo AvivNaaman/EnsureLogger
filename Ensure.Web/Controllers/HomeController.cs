@@ -99,7 +99,9 @@ namespace Ensure.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add([FromForm] EnsureTaste taste)
         {
-            await _ensureService.LogAsync(User.Identity.Name, taste);
+            // wait until operation is finished before letting the user continue.
+            // discar (_ = ) to prevent unwanted messages from the compiler/analyzer
+            _ = await _ensureService.LogAsync(User.Identity.Name, taste);
             return RedirectToAction("Logs");
         }
 

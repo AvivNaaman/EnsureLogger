@@ -9,7 +9,7 @@ namespace Ensure.Web.Services
 {
 	public class TimeService : ITimeService
 	{
-		readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<AppUser> _userManager;
 		public TimeService(UserManager<AppUser> userManager)
 		{
 			_userManager = userManager;

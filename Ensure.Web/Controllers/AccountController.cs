@@ -16,10 +16,10 @@ namespace Ensure.Web.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class AccountController : Controller
     {
-        private SignInManager<AppUser> _signInManager;
-        private IAppUsersService _appUsersService;
-        private IEnsureService _ensureService;
-        private UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
+        private readonly IAppUsersService _appUsersService;
+        private readonly IEnsureService _ensureService;
+        private readonly UserManager<AppUser> _userManager;
 
         public AccountController(SignInManager<AppUser> signInManager, IAppUsersService appUsersService,
             IEnsureService ensureService, UserManager<AppUser> userManager)
@@ -39,6 +39,7 @@ namespace Ensure.Web.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
+            // try login. on failure return with message, otherwise redirect to main page.
             var res = await _signInManager.PasswordSignInAsync(model.UserName, model.Password, false, false);
             if (!res.Succeeded)
             {
@@ -139,8 +140,9 @@ namespace Ensure.Web.Controllers
         public async Task<IActionResult> ResetPasswordFinish(string email, string token)
         {
             var u = await _userManager.FindByEmailAsync(email);
-            if (u is null) return NotFound();
-            return View(new PasswordResetViewModel { UserName = u.UserName, Token = token });
+            return  u is null ? // if user not found, return not found
+                NotFound() : // otherwise, return the page with the info
+                View(new PasswordResetViewModel { UserName = u.UserName, Token = token });
         }
 
         [HttpPost]
