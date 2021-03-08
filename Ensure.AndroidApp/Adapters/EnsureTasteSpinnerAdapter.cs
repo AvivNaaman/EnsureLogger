@@ -8,15 +8,17 @@ using Ensure.Domain.Enums;
 
 namespace Ensure.AndroidApp.Adapters
 {
+    /// <summary>
+    /// Simple ArrayAdapter to case the ensure tastes for Spinner items, including
+    /// the image of the ensure.
+    /// </summary>
     public class EnsureTasteSpinnerAdapter : ArrayAdapter<EnsureTaste>
     {
-        private Context context;
 
         public EnsureTasteSpinnerAdapter(Context context, List<EnsureTaste> enabledTastes)
             : base(context, Android.Resource.Layout.SimpleSpinnerItem, enabledTastes.ToArray())
         {
             EnabledTastes = enabledTastes;
-            this.context = context;
         }
 
         public override View GetDropDownView(int position, View convertView, ViewGroup parent)
@@ -38,8 +40,8 @@ namespace Ensure.AndroidApp.Adapters
             baseItem.FindViewById<TextView>(Resource.Id.TasteSpinnerItemTv).Text = taste.ToString();
             baseItem.FindViewById<ImageView>(Resource.Id.TasteSpinnerItemIv)
                 .SetImageResource(
-                context.Resources.GetIdentifier(
-                    "ensure_taste_" + taste.ToString().ToLower(), "drawable", context.PackageName
+                parent.Context.Resources.GetIdentifier(
+                    "ensure_taste_" + taste.ToString().ToLower(), "drawable", parent.Context.PackageName
                     )
                 );
 

@@ -9,6 +9,9 @@ using System.Collections.Generic;
 
 namespace Ensure.AndroidApp.Adapters
 {
+	/// <summary>
+    /// A RecyclerView's Adapter class for matching Logged ensures and their views inside the RecyclerView.
+    /// </summary>
 	public class EnsureRecyclerAdapter : RecyclerView.Adapter
 	{
 		public List<InternalEnsureLog> Items { get; set; }
@@ -47,11 +50,15 @@ namespace Ensure.AndroidApp.Adapters
 
 		public override int ItemCount => Items.Count;
 
+		// I won't use these supllied events BUT there will be TouchHelper for swiping items out event handling.
 		void OnClick(EnsureRecyclerAdapterClickEventArgs args) => ItemClick?.Invoke(this, args);
 		void OnLongClick(EnsureRecyclerAdapterClickEventArgs args) => ItemLongClick?.Invoke(this, args);
 
 	}
 
+	/// <summary>
+    /// A ViewHolder for the RecyclerView items.
+    /// </summary>
 	public class EnsureRecyclerAdapterViewHolder : RecyclerView.ViewHolder
 	{
 		public TextView DateLoggedTv { get; set; }
@@ -70,6 +77,10 @@ namespace Ensure.AndroidApp.Adapters
 			TasteImage = ItemView.FindViewById<ImageView>(Resource.Id.EnsureReceyclerItemIv);
 		}
 
+		/// <summary>
+        /// Set The taste of the currently disaplyed ensure, updating it's UI to match the new taste.
+        /// </summary>
+        /// <param name="taste"></param>
 		public void SetTaste(EnsureTaste taste)
         {
 			TasteImage.SetImageResource(TasteImage.Context.Resources.GetIdentifier("ensure_taste_" +

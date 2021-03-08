@@ -306,9 +306,6 @@ namespace Ensure.AndroidApp
                 case Resource.Id.action_logout:
                     Logout();
                     break;
-                case Resource.Id.TestNotify:
-                    NotificationHelper.ScheduleEnsureCheckNotification(this, DateTime.Now.AddMinutes(0.2));
-                    break;
                 default:
                     break;
             }

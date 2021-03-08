@@ -8,12 +8,12 @@
 	<EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-		android:hint="Email Address"
+		android:hint="@string/PwdResetDlgHint"
 		android:id="@+id/ResetPwdDialogEt"
 		android:inputType="textEmailAddress"/>
 	<Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 		android:id="@+id/ResetPwdDialogBtn"
-		android:text="Go"/>
+		android:text="@string/PwdResetDlgBtnText"/>
 </LinearLayout>

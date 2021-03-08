@@ -17,7 +17,7 @@
 			android:indeterminateOnly="false"
 			android:layout_marginTop="-6dp"
 			android:paddingTop="0dp"
-			tools:ignore="HardcodedSize"
+			tools:ignore="HardcodedSize,NegativeMargin"
 			android:id="@+id/MainActivityTopProgress"/>
 		<TextView
 			android:layout_width="match_parent"
@@ -32,7 +32,7 @@
 			android:padding="7dp"
 			android:id="@+id/TodayProgressTv"
 			android:gravity="center"
-			android:text="Today's Progress"
+			android:text="@stng/MainTitleTvText"
 			android:textSize="27sp"/>
 
 		<FrameLayout
@@ -53,7 +53,7 @@
 				android:autoSizeMinTextSize="12sp"
 				android:autoSizeTextType="uniform"
 				android:layout_margin="70sp"
-				android:text="0/0"
+				android:text="@string/ProgressInnerTvText"
 				android:id="@+id/MainProgressTv" />
 		</FrameLayout>
 		<View
@@ -100,7 +100,7 @@
 					android:src="@drawable/person_outline"
 					android:id="@+id/ProfileImageBtn"
 					android:scaleType="fitCenter"
-					android:contentDescription="Profile"
+					android:contentDescription="@string/ProfileImgBtnText"
 					android:background="@drawable/basic_border"
 				/>
 			</LinearLayout>
@@ -118,7 +118,7 @@
 					android:scaleType="fitCenter"
 					android:src="@drawable/time_outline"
 					android:id="@+id/HistoryImageBtn"
-					android:contentDescription="History"
+					android:contentDescription="@sting/HistoryImgBtnText"
 					android:background="@drawable/basic_border"
 				/>
 			</LinearLayout>

@@ -5,8 +5,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="vertical"
 	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	>
+	android:layout_height="match_parent">
 	<ProgressBar
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -33,13 +32,13 @@
 				android:layout_width="0px"
 				android:layout_weight="2"
 				android:layout_height="wrap_content"
-				android:text="Prev day"
+				android:text="@string/HistoryPrevDayText"
 				android:id="@+id/HistoryPrevBtn"/>
 			<TextView
 				android:layout_width="0px"
 				android:layout_weight="3"
 				android:layout_height="match_parent"
-				android:text="dd/MM/YYYY"
+				android:text=""
 				android:layout_marginHorizontal="10sp"
 				android:gravity="center"
 				android:autoSizeMinTextSize="2sp"
@@ -51,7 +50,7 @@
 				android:layout_width="0px"
 				android:layout_weight="2"
 				android:layout_height="wrap_content"
-				android:text="Next Day"
+				android:text="@string/HistoryNextDayText"
 				android:id="@+id/HistoryNextBtn"/>
 		</LinearLayout>
 
@@ -60,10 +59,11 @@
 			android:layout_width="match_parent"
 			android:layout_height="fill_parent"
 			android:orientation="vertical">
+			<!-- When no logs in the list, this is switched to visible and RecyclerView is hidden. -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="Nothing logged at this day."
+				android:text="@string/HistoryEmptyListMessage"
 				android:id="@+id/NothingMessageHistory"
 				android:visibility="invisible"/>
 			<android.support.v7.widget.RecyclerView
