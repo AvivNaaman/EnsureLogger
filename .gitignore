@@ -341,3 +341,7 @@ healthchecksdb
 
 # TextMate & other editors' backup db
 .DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
+
