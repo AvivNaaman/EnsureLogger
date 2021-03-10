@@ -34,9 +34,9 @@
     <PackageReference Include="FluentEmail.SendGrid" Version="3.0.0" />
     <PackageReference Include="FluentEmail.Razor" Version="3.0.0" />
     <PackageReference Include="FluentEmail.Core" Version="3.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.0.7" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +46,14 @@
   <ItemGroup>
     <Folder Include="Views\Account\" />
     <Folder Include="wwwroot\images\" />
+    <Folder Include="Areas\" />
+    <Folder Include="Areas\Admin\" />
+    <Folder Include="Areas\Admin\Controllers\" />
+    <Folder Include="Areas\Admin\Views\" />
+    <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Admin\Views\Home\" />
+    <Folder Include="Areas\Admin\Services\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <ItemGroup>

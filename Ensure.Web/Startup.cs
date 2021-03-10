@@ -1,3 +1,4 @@
+using Ensure.Web.Areas.Admin.Services;
 using Ensure.Web.Data;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -70,7 +71,7 @@ namespace Ensure.Web
             services.AddScoped<ITimeService, TimeService>();
             services.AddScoped<IEnsureService, EnsureService>();
             services.AddScoped<IAppUsersService, AppUsersService>();
-
+            services.AddScoped<IAdminService, AdminService>();
 
             services.ConfigureApplicationCookie(cookie =>
             {
@@ -128,6 +129,10 @@ namespace Ensure.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute(
+                    name: "areas",
+                    areaName: "Admin",
+                    pattern: "{area}/{controller=Home}/{action=Index}/{id?}");
             });
 
 
