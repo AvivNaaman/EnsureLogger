@@ -1,5 +1,6 @@
 ﻿using Ensure.Domain.Models;
 using Ensure.Web.Data;
+using Ensure.Web.Helpers;
 using Ensure.Web.Models;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,14 +32,14 @@ namespace Ensure.Web.Controllers
             , IAppUsersService appUsersService)
         {
             _userManager = userManager;
-            this._appUsersService = appUsersService;
+            _appUsersService = appUsersService;
         }
 
         [HttpGet]
         [Route("GetInfo")]
         public async Task<ActionResult<ApiUserInfo>> GetInfo()
         {
-            return await _appUsersService.GetUserInfo(User.Identity.Name, null);
+            return await _appUsersService.GetUserInfo(User.GetId(), null);
         }
 
         [HttpGet]
@@ -84,8 +85,7 @@ namespace Ensure.Web.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                DailyTarget = model.DailyTarget,
-                TimeZone = model.TimeZone
+                DailyTarget = model.DailyTarget
             };
             var res = await _userManager.CreateAsync(u, model.Password);
             if (res.Succeeded)

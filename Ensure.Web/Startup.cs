@@ -1,5 +1,6 @@
 using Ensure.Web.Areas.Admin.Services;
 using Ensure.Web.Data;
+using Ensure.Web.Options;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,21 +43,21 @@ namespace Ensure.Web
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddHttpContextAccessor();
 
+            services.AddOptions<JwtOptions>()
+                .Bind(Configuration.GetSection("Jwt"));
+
+            services.AddOptions<SendGridOptions>()
+                .Bind(Configuration.GetSection("SendGrid"));
+
+            JwtOptions jwtInstance = JwtOptions.FromConfig(Configuration);
+
             services.AddAuthentication(auth =>
             {
                 auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(bearer =>
             {
                 bearer.SaveToken = true;
-                bearer.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero
-                };
+                bearer.TokenValidationParameters = jwtInstance.GetTokenValidationParams();
             });
 
             services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -68,7 +70,6 @@ namespace Ensure.Web
                 .AddRazorRenderer()
                 .AddSendGridSender(Configuration["SendGrid:ApiKey"]);
 
-            services.AddScoped<ITimeService, TimeService>();
             services.AddScoped<IEnsureService, EnsureService>();
             services.AddScoped<IAppUsersService, AppUsersService>();
             services.AddScoped<IAdminService, AdminService>();

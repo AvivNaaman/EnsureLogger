@@ -15,12 +15,10 @@ namespace Ensure.Web.Services
 {
 	public class EnsureService : IEnsureService
 	{
-		private readonly UserManager<AppUser> _userManager;
 		private readonly ApplicationDbContext _dbContext;
 
-		public EnsureService(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
+		public EnsureService(ApplicationDbContext dbContext)
 		{
-			_userManager = userManager;
 			_dbContext = dbContext;
 		}
 
@@ -29,33 +27,21 @@ namespace Ensure.Web.Services
 			return _dbContext.Logs.FirstOrDefaultAsync(l => l.Id == id);
 		}
 
-		public async Task<List<EnsureLog>> GetUserDayLogsAsync(string userName, DateTime date)
+		public async Task<List<EnsureLog>> GetLogsByDay(string userId, DateTime date)
 		{
-			var u = await _userManager.FindByNameAsync(userName);
-
 			var dayAfterDate = date.AddDays(1);
 
-			var r = await _dbContext.Logs.Where(l => l.Logged >= date && l.Logged < dayAfterDate && l.UserId == u.Id).ToListAsync();
-
-			r.ForEach(l => l.Logged.AddHours(u.TimeZone));
+			var r = await _dbContext.Logs.Where(l => l.Logged >= date && // in date range
+												l.Logged < dayAfterDate && // and for the user
+												l.UserId == userId).ToListAsync();
 			return r;
 		}
 
-		public async Task<int> GetDayCountAsync(string userName, DateTime date)
+		public async Task<EnsureLog> LogAsync(string userId, EnsureTaste taste)
 		{
-			var u = await _userManager.FindByNameAsync(userName);
-
-			var dayAfterDate = date.AddDays(1);
-
-			return await _dbContext.Logs.Where(l => l.Logged >= date && l.Logged < dayAfterDate && l.UserId == u.Id).CountAsync();
-		}
-
-		public async Task<EnsureLog> LogAsync(string userName, EnsureTaste taste)
-		{
-			var u = await _userManager.FindByNameAsync(userName);
 			var l = new EnsureLog
 			{
-				UserId = u.Id,
+				UserId = userId,
 				EnsureTaste = taste
 			};
 			_dbContext.Logs.Add(l);
@@ -68,9 +54,8 @@ namespace Ensure.Web.Services
 			await _dbContext.SaveChangesAsync();
 		}
 
-        public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userName, List<EnsureSyncModel> logs)
+        public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userId, List<EnsureSyncModel> logs)
 		{
-			var u = await _userManager.FindByNameAsync(userName);
 
 			var addedEnsures = new List<EnsureLog>();
 
@@ -78,6 +63,7 @@ namespace Ensure.Web.Services
 				if (l.ToAdd)
                 {
 					var newl = new EnsureLog(l.ToSync); // renew log ID
+					newl.UserId = userId;
 					addedEnsures.Add(newl);
 					_dbContext.Logs.Add(newl);
 				}

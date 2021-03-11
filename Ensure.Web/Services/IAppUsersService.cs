@@ -13,5 +13,11 @@ namespace Ensure.Web.Services
         public Task<ApiUserInfo> GetUserInfo(string userName, string jwtToken);
         public ApiUserInfo GetUserInfo(AppUser u, string jwtToken);
         public Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl);
+        /// <summary>
+        /// Returns the user by it's id, AS READ-ONLY.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Task<AppUser> FindByIdReadonlyAsync(string id);
     }
 }

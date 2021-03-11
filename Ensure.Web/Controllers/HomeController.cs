@@ -1,6 +1,7 @@
 ﻿using Ensure.Domain;
 using Ensure.Domain.Enums;
 using Ensure.Web.Data;
+using Ensure.Web.Helpers;
 using Ensure.Web.Models;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -28,12 +29,15 @@ namespace Ensure.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IEnsureService _ensureService;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly IAppUsersService usersService;
+        private readonly ILogger<HomeController> logger;
 
-        public HomeController(IEnsureService ensureService, UserManager<AppUser> userManager)
+        public HomeController(IEnsureService ensureService, IAppUsersService usersService,
+            ILogger<HomeController> logger)
         {
             _ensureService = ensureService;
-            _userManager = userManager;
+            this.usersService = usersService;
+            this.logger = logger;
         }
 
         /* Redirect App base (~/) to Logs (~/Logs). Cahce for performance */
@@ -48,30 +52,26 @@ namespace Ensure.Web.Controllers
         [Route("Logs/{date?}")]
         public async Task<IActionResult> Logs(string date)
         {
-            var u = await _userManager.FindByNameAsync(User.Identity.Name);
-            int userTimeZone = u.TimeZone;
-            // user's time
-            DateTime d = DateTime.UtcNow.Add(TimeSpan.FromHours(userTimeZone));
-            try
-            {
-                d = DateTime.ParseExact(date, EnsureConstants.DateTimeUrlFormat, CultureInfo.InvariantCulture);
-            }
-            catch { }
+            Stopwatch s = new();
+            s.Start();
+            logger.LogInformation("Started {0}", s.Elapsed);
+            // try parse, on failue just get today.
+            DateTime d = date.FastParseFormattedDate() ?? DateTime.UtcNow;
+            logger.LogInformation("Got Utc date, Started logs {0}", s.Elapsed);
 
-            var currDayLogs = await _ensureService.GetUserDayLogsAsync(User.Identity.Name,
-                    d.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
+            logger.LogInformation("Parsed DT, Started logs {0}", s.Elapsed);
+            var currDayLogs = await _ensureService.GetLogsByDay(User.GetId(), d.Date);
 
-            currDayLogs.ForEach(l => l.Logged = l.Logged.AddHours(userTimeZone));
-            // TODO: Make it make more sense to human eyes
-            var todayCount = d == DateTime.UtcNow.Add(TimeSpan.FromHours(userTimeZone)) ? currDayLogs.Count : await _ensureService.GetDayCountAsync(User.Identity.Name,
-                    DateTime.UtcNow.Date.Subtract(TimeSpan.FromHours(userTimeZone)));
+            logger.LogInformation("Finished logs, Started user {0}", s.Elapsed);
+            var u = await usersService.FindByIdReadonlyAsync(User.GetId());
 
+            logger.LogInformation("Finished user {0}", s.Elapsed);
             var vm = new HomeViewModel()
             {
                 Logs = currDayLogs,
                 CurrentDate = d.Date,
                 // current day progress - just count
-                UserDailyProgress = todayCount,
+                UserDailyProgress = currDayLogs.Count,
                 UserDailyTarget = u.DailyTarget,
             };
             return View(vm);
@@ -101,7 +101,7 @@ namespace Ensure.Web.Controllers
         {
             // wait until operation is finished before letting the user continue.
             // discar (_ = ) to prevent unwanted messages from the compiler/analyzer
-            _ = await _ensureService.LogAsync(User.Identity.Name, taste);
+            _ = await _ensureService.LogAsync(User.GetId(), taste);
             return RedirectToAction("Logs");
         }
 
@@ -115,7 +115,7 @@ namespace Ensure.Web.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var l = await _ensureService.FindByIdAsync(id);
-            if (l == null || l.UserId != User.FindFirst(ClaimTypes.NameIdentifier).Value)
+            if (l == null || l.UserId != User.GetId())
             {
                 return BadRequest();
             }
@@ -124,6 +124,7 @@ namespace Ensure.Web.Controllers
             return RedirectToAction("Logs", new { date });
         }
         #endregion
+
 
 
     }

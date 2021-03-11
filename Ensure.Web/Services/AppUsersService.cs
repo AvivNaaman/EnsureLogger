@@ -12,43 +12,54 @@ using Microsoft.Extensions.Configuration;
 using Ensure.Domain.Models;
 using FluentEmail.Core.Interfaces;
 using FluentEmail.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Ensure.Web.Options;
 
 namespace Ensure.Web.Services
 {
     public class AppUsersService : IAppUsersService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly SendGridOptions sendGridOptions;
+        private readonly JwtOptions jwtOptions;
         private readonly ISender emailSender;
         private readonly ITemplateRenderer emailTemplateRenderer;
-        private readonly IConfiguration config;
+        private readonly ApplicationDbContext context;
 
-        public AppUsersService(IConfiguration config, UserManager<AppUser> userManager,
-            ISender emailSender, ITemplateRenderer emailTemplateRenderer)
+        public AppUsersService(UserManager<AppUser> userManager, IOptions<JwtOptions> jwtOptions, IOptions<SendGridOptions> sendGridOptions,
+            ISender emailSender, ITemplateRenderer emailTemplateRenderer, ApplicationDbContext _context)
         {
-            this.config = config;
             _userManager = userManager;
+            this.sendGridOptions = sendGridOptions.Value;
+            this.jwtOptions = jwtOptions.Value;
             this.emailSender = emailSender;
             this.emailTemplateRenderer = emailTemplateRenderer;
+            context = _context;
         }
+
+        public Task<AppUser> FindByIdReadonlyAsync(string id)
+            => context.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
 
         public string GenerateBearerToken(AppUser user)
         {
-
-            var key = Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]);
-            var tokenDescriptor = new JwtSecurityToken(null, null, claims: new List<Claim>()
+            var tokenDescriptor = new JwtSecurityToken(jwtOptions.Issuer, jwtOptions.Audience, claims: new List<Claim>()
                     {
                         new Claim(ClaimTypes.NameIdentifier, user.Id),
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.Email, user.Email),
+                        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber)
                 },
-            expires: DateTime.UtcNow.AddYears(1),
-            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature));
+            expires: DateTime.UtcNow.AddDays(jwtOptions.DaysToExpire),
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(jwtOptions.Key),
+                                                        SecurityAlgorithms.HmacSha256Signature));
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
 
-        public async Task<ApiUserInfo> GetUserInfo(string userName, string jwtToken)
+        public async Task<ApiUserInfo> GetUserInfo(string userId, string jwtToken)
         {
-            var u = await _userManager.FindByNameAsync(userName);
+            var u = await FindByIdReadonlyAsync(userId);
             return GetUserInfo(u, jwtToken);
         }
 
@@ -85,7 +96,7 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
             var encEmail = System.Web.HttpUtility.UrlEncode(u.Email);
             var result = await new Email(emailTemplateRenderer, emailSender)
                 .To(u.Email, u.UserName)
-                .SetFrom(config["SendGrid:FromAddress"], "Ensure Logger")
+                .SetFrom(sendGridOptions.FromAddress, "Ensure Logger")
                 .Subject(subj)
                 .UsingTemplate(template, new
                 {
@@ -103,7 +114,7 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
         {
             var u = await _userManager.FindByNameAsync(userName);
             u.DailyTarget = target;
-            _ = await _userManager.UpdateAsync(u);
+            await _userManager.UpdateAsync(u);
         }
     }
 }

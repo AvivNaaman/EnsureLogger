@@ -54,20 +54,22 @@
     <Folder Include="Areas\Admin\Views\Home\" />
     <Folder Include="Areas\Admin\Services\" />
     <Folder Include="Migrations\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Options\" />
   </ItemGroup>
 
   <ItemGroup>
-    <AndroidResource Include="wwwroot\images\ensure_taste_chocolate.png">
+    <Content Update="wwwroot\images\ensure_taste_chocolate.png">
       <SubType></SubType>
       <Generator></Generator>
-    </AndroidResource>
-    <AndroidResource Include="wwwroot\images\ensure_taste_strawberry.png">
+    </Content>
+    <Content Update="wwwroot\images\ensure_taste_strawberry.png">
       <SubType></SubType>
       <Generator></Generator>
-    </AndroidResource>
-    <AndroidResource Include="wwwroot\images\ensure_taste_vanilla.png">
+    </Content>
+    <Content Update="wwwroot\images\ensure_taste_vanilla.png">
       <SubType></SubType>
       <Generator></Generator>
-    </AndroidResource>
+    </Content>
   </ItemGroup>
 </Project>

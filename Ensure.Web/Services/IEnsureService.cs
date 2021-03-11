@@ -14,10 +14,10 @@ namespace Ensure.Web.Services
 		/// <summary>
         /// Logs a single ensure
         /// </summary>
-        /// <param name="userName">The name of logging user</param>
+        /// <param name="userId">The id of logging user</param>
         /// <param name="taste">The taste of the new log</param>
         /// <returns>The created log</returns>
-		public Task<EnsureLog> LogAsync(string userName, EnsureTaste taste);
+		public Task<EnsureLog> LogAsync(string userId, EnsureTaste taste);
 
 		/// <summary>
         /// Remove a single log
@@ -25,29 +25,16 @@ namespace Ensure.Web.Services
         /// <param name="log">The log to remove</param>
 		public Task RemoveLogAsync(EnsureLog log);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <param name="date"></param>
-        /// <returns></returns>
-		public Task<List<EnsureLog>> GetUserDayLogsAsync(string userName, DateTime date);
+		public Task<List<EnsureLog>> GetLogsByDay(string userId, DateTime date);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
 		public Task<EnsureLog> FindByIdAsync(string id);
-        [Obsolete]
-		public Task<int> GetDayCountAsync(string userName, DateTime date);
 
         /// <summary>
         /// Adds a list of logs by the specified logs
         /// </summary>
-        /// <param name="name">The name of the logging user</param>
+        /// <param name="name">The id of the syncing user</param>
         /// <param name="logs">The logs to insert</param>
         /// <returns>The inserted logs</returns>
-        public Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userName, List<EnsureSyncModel> logs);
+        public Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userId, List<EnsureSyncModel> logs);
     }
 }

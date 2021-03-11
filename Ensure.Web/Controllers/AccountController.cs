@@ -71,8 +71,7 @@ namespace Ensure.Web.Controllers
             {
                 Email = model.Email,
                 UserName = model.UserName,
-                DailyTarget = model.DailyTarget,
-                TimeZone = model.TimeZone,
+                DailyTarget = model.DailyTarget
             };
             var res = await _userManager.CreateAsync(u, model.Password);
             if (res.Succeeded)

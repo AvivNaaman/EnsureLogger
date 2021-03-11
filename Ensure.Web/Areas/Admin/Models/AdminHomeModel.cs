@@ -16,6 +16,10 @@ namespace Ensure.Web.Areas.Admin.Models
         public int[] UsersData { get; set; }
 
         public int[] TasteData { get; set; }
+
+
+        public int TotalRegisteredUsers { get; set; }
+        public int TotalLoggedEnsures { get; set; }
     }
 
 }

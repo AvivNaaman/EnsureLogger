@@ -38,7 +38,6 @@ namespace Ensure.Web.Areas.Admin.Services
 
             var vals = Enum.GetValues<EnsureTaste>();
             toReturn.TasteData = new int[vals.Length];
-            List<Task<int>> queries = new();
             for (int i = 0; i < vals.Length; i++)
             {
                 toReturn.TasteData[i] = await _context.Logs
@@ -46,7 +45,9 @@ namespace Ensure.Web.Areas.Admin.Services
                     .CountAsync();
             }
 
-            Parallel.ForEach(queries, q => _ = q.Result);
+            toReturn.TotalLoggedEnsures = await _context.Logs.CountAsync();
+            toReturn.TotalRegisteredUsers = await _context.Users.CountAsync();
+
             return toReturn;
         }
 
