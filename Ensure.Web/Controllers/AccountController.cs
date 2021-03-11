@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ensure.Web.Controllers
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
+    [ApiExplorerSettings(IgnoreApi = true)] // We don't want mapping of MVC controllers (returning HTML) to API doc!
     public class AccountController : Controller
     {
         private readonly SignInManager<AppUser> _signInManager;
@@ -32,9 +32,11 @@ namespace Ensure.Web.Controllers
 
         /* Login: GET & POST */
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login() => View();
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -58,11 +60,17 @@ namespace Ensure.Web.Controllers
             return RedirectToAction("Logs", "Home");
         }
 
+        /* Access Denied */
+        [HttpGet]
+        public IActionResult AccessDenied() => View();
+
         /* Signup: GET & POST */
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult SignUp() => User.Identity.IsAuthenticated ? Redirect("View") : View();
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> SignUp(SignUpViewModel model)
         {
             if (User.Identity.IsAuthenticated) return RedirectToAction("Logs", "Home");

@@ -78,11 +78,12 @@ namespace Ensure.Web
             {
                 cookie.LoginPath = "/Account/Login";
                 cookie.LogoutPath = "/Account/Logout";
+                cookie.AccessDeniedPath = "/Account/AccessDenied"; // TODO: Implement!
             });
 
             services.AddSwaggerGen(s =>
             {
-                s.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
+                s.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Ensure Logger API",
                     Description = "The API fot the cross-platform drink logger",
@@ -91,6 +92,11 @@ namespace Ensure.Web
                         Name = "MIT License",
                         Url = new Uri("https://opensource.org/licenses/MIT"),
                     },
+                    Contact = new OpenApiContact
+                    {
+                         Name = "Aviv Naaman",
+                         Email = "avivnaaman04@gmail.com",
+                    },
                     Version = "v1"
                 });
             });
@@ -98,8 +104,14 @@ namespace Ensure.Web
             services.AddAntiforgery();
 
             services.AddControllersWithViews()
+                .AddJsonOptions(json =>
+                {
+                    // we don't want to map shared helper props (such as ApiResponse.IsError)
+                    // to save some time & data usage. This prop will be eavlauted on client if needed.
+                    json.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
+                })
 #if DEBUG
-                .AddRazorRuntimeCompilation()
+                .AddRazorRuntimeCompilation() // only when debugging!
 #endif
                 ;
         }
@@ -118,7 +130,9 @@ namespace Ensure.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+#if !DEBUG
             app.UseHttpsRedirection();
+#endif
             app.UseStaticFiles();
             app.UseRouting();
 
@@ -136,7 +150,7 @@ namespace Ensure.Web
                     pattern: "{area}/{controller=Home}/{action=Index}/{id?}");
             });
 
-
+            // Swagger for easy API doc & access
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {

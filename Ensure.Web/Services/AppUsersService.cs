@@ -49,10 +49,9 @@ namespace Ensure.Web.Services
                         new Claim(ClaimTypes.NameIdentifier, user.Id),
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.Email, user.Email),
-                        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber)
                 },
             expires: DateTime.UtcNow.AddDays(jwtOptions.DaysToExpire),
-            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(jwtOptions.Key),
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
                                                         SecurityAlgorithms.HmacSha256Signature));
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }

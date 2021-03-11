@@ -11,7 +11,10 @@ namespace Ensure.Web.Options
 
         public string Audience { get; set; }
 
-        public byte[] Key { get; set; }
+        public string Key
+        {
+            get; set;
+        }
 
         public int DaysToExpire { get; set; }
 
@@ -20,12 +23,11 @@ namespace Ensure.Web.Options
             return new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateAudience = false,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = Issuer,
-                ValidAudience = Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Key)
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key))
             };
         }
 
@@ -33,9 +35,9 @@ namespace Ensure.Web.Options
         {
             JwtOptions options = new();
             options.Issuer = config.GetValue<string>("Jwt:Issuer");
-            options.Audience = config.GetValue<string>("Jwt:Audidenc");
+            options.Audience = config.GetValue<string>("Jwt:Audience");
             options.DaysToExpire = config.GetValue<int>("Jwt:DaysToExpire");
-            options.Key = Encoding.UTF8.GetBytes(config.GetValue<string>("Jwt:Key"));
+            options.Key = config.GetValue<string>("Jwt:Key");
             return options;
         }
     }

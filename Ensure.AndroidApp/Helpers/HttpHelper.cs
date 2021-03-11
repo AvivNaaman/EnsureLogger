@@ -16,7 +16,7 @@ namespace Ensure.AndroidApp.Helpers
 	// TODO: Move to GetJsonAsync<TResult> & PostJsonAsync<TResult>?
 	public class HttpHelper
 	{
-		public Uri BaseUrl { get; } = new Uri("https://ensurelog.azurewebsites.net");
+		public Uri BaseUrl { get; } = new Uri("http://10.0.2.2:5000");
 		private readonly Context context;
 
 		public HttpHelper(Context context)
@@ -28,6 +28,7 @@ namespace Ensure.AndroidApp.Helpers
 		{
 			var app = ((EnsureApplication)context.ApplicationContext);
 			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
+
 			// set base address
 			client.BaseAddress = BaseUrl;
 			// accept json only

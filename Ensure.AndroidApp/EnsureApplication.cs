@@ -14,9 +14,11 @@ using System.Text;
 
 namespace Ensure.AndroidApp
 {
-	[Application(Debuggable =
+	[Application(
+		Debuggable =
 #if DEBUG
-		true
+		true,
+		NetworkSecurityConfig = "@xml/net_config"
 #else
 		false
 #endif
