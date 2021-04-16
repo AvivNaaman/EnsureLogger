@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Net;
 using Android.Support.V7.App;
+using Android.Util;
 using Ensure.AndroidApp.Helpers;
 using Ensure.Domain;
 using Ensure.Domain.Entities;
@@ -25,23 +27,22 @@ namespace Ensure.AndroidApp.Data
     public class EnsureRepository : BaseService
     {
         /// <summary>
-        /// The SQLite3 database name
-        /// </summary>
-        const string DBName = "EnsureStore.db";
-
-        /// <summary>
         /// The currently opened SQLite connection
         /// </summary>
         private SQLiteAsyncConnection db;
 
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
+        /// <summary>
+        /// The full path to the local database file
+        /// </summary>
+        string dbPath;
 
         /// <summary>
-        /// Constructs a new repository.
+        /// Constructs a new ensure repository.
         /// </summary>
-        /// <param name="context"></param>
         public EnsureRepository(Context context) : base(context)
         {
+            var DBName = context.Resources.GetString(Resource.String.DbName);
+            dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
         }
 
         private void OpenDbConnection()
@@ -258,7 +259,17 @@ namespace Ensure.AndroidApp.Data
         public async Task ClearAllCache()
         {
             OpenDbConnection();
-            await db.Table<InternalEnsureLog>().DeleteAsync();
+            try
+            {
+                await db.Table<InternalEnsureLog>()
+                    .DeleteAsync(l => 1 == 1);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("EnsureLog", ex.ToString());
+                Console.WriteLine(ex);
+                Debug.WriteLine(ex);
+            }
             CloseDbConnection();
         }
     }

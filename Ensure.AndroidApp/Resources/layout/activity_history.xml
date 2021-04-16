@@ -51,7 +51,8 @@
 				android:layout_weight="2"
 				android:layout_height="wrap_content"
 				android:text="@string/HistoryNextDayText"
-				android:id="@+id/HistoryNextBtn"/>
+				android:id="@+id/HistoryNextBtn"
+				android:enabled="false"/>
 		</LinearLayout>
 
 		<!-- Logs List -->

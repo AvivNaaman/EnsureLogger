@@ -32,7 +32,7 @@
 			android:padding="7dp"
 			android:id="@+id/TodayProgressTv"
 			android:gravity="center"
-			android:text="@stng/MainTitleTvText"
+			android:text="@string/MainTitleTvText"
 			android:textSize="27sp"/>
 
 		<FrameLayout

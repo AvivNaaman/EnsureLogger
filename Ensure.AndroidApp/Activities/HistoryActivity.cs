@@ -88,6 +88,7 @@ namespace Ensure.AndroidApp
         private async void NextBtn_Click(object sender, EventArgs e)
         {
             await UpdateDate(displayedDate.AddDays(1)); // next day
+            nextBtn.Enabled = displayedDate.AddDays(1) <= DateTime.Now;
         }
 
         /// <summary>
@@ -96,6 +97,7 @@ namespace Ensure.AndroidApp
         private async void PrevBtn_Click(object sender, EventArgs e)
         {
             await UpdateDate(displayedDate.AddDays(-1)); // prev day
+            nextBtn.Enabled = true;
         }
 
         /// <summary>
@@ -160,7 +162,8 @@ namespace Ensure.AndroidApp
         public void SetUiLoadingState(bool isLoading)
         {
             topLoadingProgress.Indeterminate = isLoading;
-            logsRvTouchHelper.EnableSwipe =  nextBtn.Enabled = prevBtn.Enabled = !isLoading;
+            logsRvTouchHelper.EnableSwipe = prevBtn.Enabled = !isLoading;
+            nextBtn.Enabled = !isLoading && displayedDate.AddDays(1) <= DateTime.Now;
         }
 
         /// <summary> Ensure RecyclerView swipe/move event handler class </summary>

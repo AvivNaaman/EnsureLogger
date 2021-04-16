@@ -246,11 +246,11 @@ namespace Ensure.AndroidApp
         /// <summary>
         /// Logs the user out and turns him to the login
         /// </summary>
-        private void Logout()
+        private async Task Logout()
         {
             SetUiLoadingState(true);
             StartLoginActivity(); // exit to login activity
-            userService.LogUserOut();
+            await userService.LogUserOut();
             ensures.Clear(); // Remove ensures & any other previous user data on UI
             mainProgressBar.Progress = 0;
             SetUiLoadingState(false);
@@ -304,7 +304,7 @@ namespace Ensure.AndroidApp
             switch (item.ItemId)
             {
                 case Resource.Id.action_logout:
-                    Logout();
+                    _ = Logout();
                     break;
                 default:
                     break;

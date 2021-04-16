@@ -13,14 +13,16 @@ namespace Ensure.AndroidApp.Data
     public class UserService : BaseService
     {
 
-        public const string SharedPrefernceName = "EnsureSp";
-        public const string UserInfoSharedPreference = "UserInfo";
+        private string SharedPrefernceName;
+        private string UserInfoSharedPreference;
 
         private ISharedPreferences sharedPreferences;
         private EnsureApplication application;
 
         public UserService(Context context) : base(context)
         {
+            SharedPrefernceName = context.GetString(Resource.String.SpName);
+            UserInfoSharedPreference = context.GetString(Resource.String.UserInfoPreferenceName);
             application = (EnsureApplication)context.ApplicationContext;
             sharedPreferences = context.GetSharedPreferences(SharedPrefernceName, FileCreationMode.Private);
         }
@@ -78,10 +80,11 @@ namespace Ensure.AndroidApp.Data
         /// <summary>
         /// Logs out the current user
         /// </summary>
-        public void LogUserOut()
+        public async Task LogUserOut()
         {
             application.UserInfo = null;
             SaveUserInfoToSp();
+            await new EnsureRepository(context).ClearAllCache();
         }
 
         #region SharePreference

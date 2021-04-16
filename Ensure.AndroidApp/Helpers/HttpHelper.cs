@@ -13,15 +13,15 @@ using System.Threading.Tasks;
 
 namespace Ensure.AndroidApp.Helpers
 {
-	// TODO: Move to GetJsonAsync<TResult> & PostJsonAsync<TResult>?
 	public class HttpHelper
 	{
-		public Uri BaseUrl { get; } = new Uri("http://10.0.2.2:5000");
+		public Uri baseUrl { get; private set; } 
 		private readonly Context context;
 
 		public HttpHelper(Context context)
 		{
 			this.context = context;
+			baseUrl = new Uri(context.GetString(Resource.String.ApiUrl));
 		}
 
 		public HttpClient BuildClient()
@@ -30,7 +30,7 @@ namespace Ensure.AndroidApp.Helpers
 			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
 
 			// set base address
-			client.BaseAddress = BaseUrl;
+			client.BaseAddress = baseUrl;
 			// accept json only
 			client.DefaultRequestHeaders.Accept.Clear();
 			client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));

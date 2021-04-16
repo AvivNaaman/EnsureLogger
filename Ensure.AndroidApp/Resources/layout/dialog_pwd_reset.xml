@@ -2,9 +2,19 @@
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical"
-	android:layout_width="250sp"
-	android:layout_height="150sp"
-	android:gravity="center">
+	android:layout_width="280sp"
+	android:layout_height="190sp"
+	android:gravity="center" android:padding="17sp">
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:text="Reset Password"
+		android:textSize="21sp"/>
+	
+	<TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:text="Enter your email address and we'll post you an email with all the information."/>
 	<EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

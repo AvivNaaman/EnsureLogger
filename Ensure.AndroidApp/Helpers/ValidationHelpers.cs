@@ -13,7 +13,7 @@ namespace Ensure.AndroidApp.Helpers
     public static class ValidationHelpers
     {
         // Regular expression for checking password
-        static Regex pwdRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$");
+        private static Regex pwdRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$");
         /// <summary>
         /// Returns whether the given password is valid,
         /// And shows an error dialog if not.

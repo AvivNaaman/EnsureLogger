@@ -53,4 +53,10 @@
 	<!-- Ensures pick taste (for adding) spinner -->
 	<string name="ESITasteNamePlaceholder">Taste</string>
 	<string name="ESITasteImgDescription">Ensure Taste to add</string>
+
+	<!-- Data -->
+	<string name="DbName">EnsureStore.db</string>
+	<string name="SpName">EnsureSp</string>
+	<string name="UserInfoPreferenceName">UserInfo</string>
+	<string name="ApiUrl">http://10.0.2.2:5000/</string>
 </resources>

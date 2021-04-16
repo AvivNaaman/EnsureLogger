@@ -30,7 +30,7 @@ namespace Ensure.AndroidApp.Data
         public BaseService(Context context)
         {
             this.context = context;
-            this.http = new HttpHelper(context);
+            http = new HttpHelper(context);
         }
 
         /// <summary>
