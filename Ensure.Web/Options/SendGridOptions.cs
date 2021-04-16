@@ -6,5 +6,4 @@ namespace Ensure.Web.Options
         public string ApiKey { get; set; }
         public string FromAddress { get; set; }
     }
-
 }

@@ -11,13 +11,14 @@ namespace Ensure.Web.Options
 
         public string Audience { get; set; }
 
-        public string Key
-        {
-            get; set;
-        }
+        public string Key { get; set; }
 
         public int DaysToExpire { get; set; }
 
+        /// <summary>
+        /// Builds and returns a TokenValidationParameters object by the specified options.
+        /// </summary>
+        /// <returns>The new TokenValidationParameters object</returns>
         public TokenValidationParameters GetTokenValidationParams()
         {
             return new TokenValidationParameters
@@ -31,6 +32,10 @@ namespace Ensure.Web.Options
             };
         }
 
+        /// <summary>
+        /// Constructs the options directly from the givne IConfiguration section.
+        /// </summary>
+        /// <returns>The parsed options</returns>
         public static JwtOptions FromConfig(IConfiguration config)
         {
             JwtOptions options = new();

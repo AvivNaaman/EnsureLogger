@@ -2,13 +2,11 @@
 using Ensure.Domain.Enums;
 using Ensure.Domain.Models;
 using Ensure.Web.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Ensure.Web.Services
@@ -48,18 +46,19 @@ namespace Ensure.Web.Services
 			await _dbContext.SaveChangesAsync();
 			return l;
 		}
+
 		public async Task RemoveLogAsync(EnsureLog log)
 		{
 			_dbContext.Remove(log);
 			await _dbContext.SaveChangesAsync();
 		}
 
-        public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userId, List<EnsureSyncModel> logs)
+        public async Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userId, List<EnsureSyncModel> changes)
 		{
 
 			var addedEnsures = new List<EnsureLog>();
 
-			logs.ForEach(l => {
+			changes.ForEach(l => {
 				if (l.ToAdd)
                 {
 					var newl = new EnsureLog(l.ToSync); // renew log ID

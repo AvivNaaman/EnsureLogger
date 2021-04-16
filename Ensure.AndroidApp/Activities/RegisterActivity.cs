@@ -1,20 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using Android.App;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Data;
-using Ensure.AndroidApp.Helpers;
-using Ensure.Domain.Models;
-using Newtonsoft.Json;
 using static Ensure.AndroidApp.Helpers.ValidationHelpers;
 
 namespace Ensure.AndroidApp

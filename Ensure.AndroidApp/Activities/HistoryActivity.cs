@@ -1,15 +1,8 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Text;
 using System.Threading.Tasks;
-
 using Android.App;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Support.V7.App;
 using Android.Support.V7.Widget;
 using Android.Support.V7.Widget.Helper;
@@ -17,7 +10,6 @@ using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Adapters;
 using Ensure.AndroidApp.Data;
-using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp
 {
@@ -120,6 +112,9 @@ namespace Ensure.AndroidApp
         #endregion
 
         #region Data
+        /// <summary>
+        /// Updates the currently displayed date and updates the disaplyed data.
+        /// </summary>
         private async Task UpdateDate(DateTime newDate)
         {
             // update value & UI, then call update list
@@ -127,6 +122,9 @@ namespace Ensure.AndroidApp
             displayedDateTv.Text = newDate.ToString("dd/MM/yyyy");
             await UpdateList();
         }
+        /// <summary>
+        /// Fetches the list of the currently displayed date and shows it on the screen
+        /// </summary>
         private async Task UpdateList()
         {
             // fetch & put in the list
@@ -166,7 +164,7 @@ namespace Ensure.AndroidApp
             nextBtn.Enabled = !isLoading && displayedDate.AddDays(1) <= DateTime.Now;
         }
 
-        /// <summary> Ensure RecyclerView swipe/move event handler class </summary>
+        /// <summary> Ensure RecyclerView swipe/move event handler class - for deletion </summary>
         private class EnsureLogTouchHelper : ItemTouchHelper.Callback
         {
             public bool EnableSwipe { get; set; }

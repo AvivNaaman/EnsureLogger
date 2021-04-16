@@ -25,16 +25,25 @@ namespace Ensure.Web.Services
         /// <param name="log">The log to remove</param>
 		public Task RemoveLogAsync(EnsureLog log);
 
-		public Task<List<EnsureLog>> GetLogsByDay(string userId, DateTime date);
-
-		public Task<EnsureLog> FindByIdAsync(string id);
+        /// <summary>
+        /// Returns all the logged logs in the specified date for a user by it's id
+        /// </summary>
+        /// <returns>The logs</returns>
+        public Task<List<EnsureLog>> GetLogsByDay(string userId, DateTime date);
 
         /// <summary>
-        /// Adds a list of logs by the specified logs
+        /// Finds a log by it's id
         /// </summary>
-        /// <param name="name">The id of the syncing user</param>
-        /// <param name="logs">The logs to insert</param>
-        /// <returns>The inserted logs</returns>
+        /// <param name="id">the log id</param>
+        /// <returns>The log or null, if not found</returns>
+        public Task<EnsureLog> FindByIdAsync(string id);
+
+
+        /// <summary>
+        /// Syncs all the given logs: pushes the new changes to the database and returns all the added logsz
+        /// </summary>
+        /// <param name="changes">The change models list</param>
+        /// <returns>The created logs</returns>
         public Task<ActionResult<List<EnsureLog>>> SyncEnsuresAsync(string userId, List<EnsureSyncModel> logs);
     }
 }

@@ -2,18 +2,10 @@
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Util;
-using Android.Views;
 using Android.Widget;
 using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
-using Ensure.Domain.Models;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Text;
 
 namespace Ensure.AndroidApp
 {
@@ -71,9 +63,9 @@ namespace Ensure.AndroidApp
         /// Event handler for reset password dialog inner button click
         /// Validates the entered email & sends the reset request to the server
         /// </summary>
-        /// <param name="d"></param>
-        /// <param name="btn"></param>
-        /// <param name="emailEt"></param>
+        /// <param name="d">The shown dialog</param>
+        /// <param name="btn">The dialog's action button</param>
+        /// <param name="emailEt">The dialog's edit text for the email address</param>
         private async void DialogResetPwdBtn_Click(Dialog d, Button btn, EditText emailEt)
         {
             // get typed email, validate & post
@@ -143,7 +135,7 @@ namespace Ensure.AndroidApp
                 = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
         }
 
-        // prevent the Finish() call by default so user won't "escape" login
+        // prevent the Finish() call by default so user won't be able to "escape" login
         public override void OnBackPressed() { }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)

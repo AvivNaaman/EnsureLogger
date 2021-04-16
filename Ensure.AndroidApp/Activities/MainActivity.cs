@@ -5,21 +5,13 @@ using Android.Runtime;
 using Android.Widget;
 using Android.Content;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Ensure.Domain.Entities;
 using System.Collections.Generic;
 using Ensure.Domain.Enums;
 using System;
 using System.Linq;
-using Android.Util;
 using Android.Support.V4.Widget;
-using Android.Support.V7.Widget;
-using Ensure.AndroidApp.Helpers;
 using Ensure.AndroidApp.Adapters;
-using Android.Support.V7.Widget.Helper;
 using Android.Views;
-using Ensure.Domain;
-using Ensure.Domain.Models;
 using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.BroadcastReceivers;
 using System.Security.Authentication;
@@ -125,9 +117,9 @@ namespace Ensure.AndroidApp
             topHelloMessage.Text = $"Hello, {userService.CurrentUser.UserName}";
         }
 
-
         protected override void OnPause()
         {
+            // don't listen to net changes out of the app - save some battery in bg mode
             if (netStateReceiver != null)
             {
                 UnregisterReceiver(netStateReceiver);

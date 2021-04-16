@@ -1,13 +1,6 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿using System;
 using Android.App;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
@@ -44,9 +37,13 @@ namespace Ensure.AndroidApp
 
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
 
+            // load UI
             UpdateFromInfo();
         }
 
+        /// <summary>
+        /// Event handler for save button click - posts the new infomation
+        /// </summary>
         private async void SaveTargetBtn_Click(object sender, EventArgs e)
         {
             SetUiLoadingState(true);
@@ -66,6 +63,9 @@ namespace Ensure.AndroidApp
             SetUiLoadingState(false);
         }
 
+        /// <summary>
+        /// Loads the user info into the UI from the local cache
+        /// </summary>
         private void UpdateFromInfo()
         {
             var info = userService.CurrentUser;
@@ -79,7 +79,6 @@ namespace Ensure.AndroidApp
             topProgress.Indeterminate = isLoading;
             saveTargetBtn.Enabled = target.Enabled = !isLoading;
         }
-
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {

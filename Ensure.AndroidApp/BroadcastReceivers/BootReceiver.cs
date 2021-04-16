@@ -19,7 +19,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
 {
     /// <summary>
     /// A broadcast receiver which fires on phone start,
-    /// and re-starts the notification alarms
+    /// and re-starts the notification alarms cycle
     /// </summary>
     [BroadcastReceiver(Enabled = true, Exported = false, Permission = Permission.ReceiveBootCompleted)]
     [IntentFilter(new string[] { Intent.ActionBootCompleted })] // auto register to power event
@@ -27,7 +27,8 @@ namespace Ensure.AndroidApp.BroadcastReceivers
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            Log.Info("EnsureLogger", "Boot Completed and ensure event fired!");
+            Log.Info("EnsureLogger", "Boot Completed and boot event fired!");
+            // schedule next notification
             NotificationHelper.ScheduleEnsureCheckNotification(context, DateTime.Now.AddMinutes(1));
         }
     }

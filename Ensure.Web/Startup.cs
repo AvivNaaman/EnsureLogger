@@ -45,7 +45,6 @@ namespace Ensure.Web
 
             services.AddOptions<JwtOptions>()
                 .Bind(Configuration.GetSection("Jwt"));
-
             services.AddOptions<SendGridOptions>()
                 .Bind(Configuration.GetSection("SendGrid"));
 
@@ -123,6 +122,13 @@ namespace Ensure.Web
             {
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
+
+                // Swagger for easy API doc & access
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ensure Logger API");
+                });
             }
             else
             {
@@ -148,13 +154,6 @@ namespace Ensure.Web
                     name: "areas",
                     areaName: "Admin",
                     pattern: "{area}/{controller=Home}/{action=Index}/{id?}");
-            });
-
-            // Swagger for easy API doc & access
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ensure Logger API");
             });
         }
     }

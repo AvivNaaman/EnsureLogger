@@ -14,16 +14,20 @@ using System.Text;
 
 namespace Ensure.AndroidApp
 {
+	/// <summary>
+    /// Holds the state information of the application
+    /// </summary>
 	[Application(
 		Debuggable =
 #if DEBUG
 		true,
-		NetworkSecurityConfig = "@xml/net_config"
+		NetworkSecurityConfig = "@xml/net_config" // disable network security policy (TLS) when debugging
 #else
 		false
 #endif
 		)
 		]
+	
 	class EnsureApplication : Application
 	{
 		public ApiUserInfo UserInfo { get; set; }

@@ -80,7 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\EnsureRecyclerAdapter.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helpers\HttpHelper.cs" />
     <Compile Include="Activities\LoginActivity.cs" />
     <Compile Include="Activities\MainActivity.cs" />
