@@ -279,7 +279,7 @@ namespace Ensure.AndroidApp
         private void StartLoginActivity()
         {
             var intent = new Intent(this, typeof(LoginActivity));
-            StartActivityForResult(intent, (int)ActivityRequestCodes.Login);
+            StartActivity(intent);
         }
         #endregion
 
@@ -310,14 +310,6 @@ namespace Ensure.AndroidApp
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        /// <summary>
-        /// Contains result codes for StartActivityForResult calls.
-        /// </summary>
-        private enum ActivityRequestCodes
-        {
-            Login
         }
 
     }
