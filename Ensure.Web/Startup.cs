@@ -1,26 +1,18 @@
 using Ensure.Web.Areas.Admin.Services;
 using Ensure.Web.Data;
 using Ensure.Web.Options;
+using Ensure.Web.Security;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Ensure.Web
 {
@@ -47,6 +39,8 @@ namespace Ensure.Web
                 .Bind(Configuration.GetSection("Jwt"));
             services.AddOptions<SendGridOptions>()
                 .Bind(Configuration.GetSection("SendGrid"));
+            services.AddOptions<CookieAuthOptions>()
+                .Bind(Configuration.GetSection("CookieAuth"));
 
             JwtOptions jwtInstance = JwtOptions.FromConfig(Configuration);
 
@@ -57,13 +51,11 @@ namespace Ensure.Web
             {
                 bearer.SaveToken = true;
                 bearer.TokenValidationParameters = jwtInstance.GetTokenValidationParams();
-            });
-
-            services.AddIdentity<AppUser, IdentityRole>(options =>
+            }).AddScheme<SessionAuthOptions, SessionAuthHandler>(SessionAuthConstants.Scheme, options =>
             {
-                options.SignIn.RequireConfirmedEmail = false;
-            })
-                .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+                options.KeyBytes = Encoding.UTF8.GetBytes(Configuration.GetValue<string>("CookieAuth:Key"));
+                options.CookieName = SessionAuthConstants.DefaultCookieName;
+            });
 
             services.AddFluentEmail(Configuration["SendGrid:FromAddress"])
                 .AddRazorRenderer()
@@ -71,6 +63,7 @@ namespace Ensure.Web
 
             services.AddScoped<IEnsureService, EnsureService>();
             services.AddScoped<IAppUsersService, AppUsersService>();
+            services.AddScoped<ISigninService, SigninService>();
             services.AddScoped<IAdminService, AdminService>();
 
             services.ConfigureApplicationCookie(cookie =>

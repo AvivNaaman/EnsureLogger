@@ -15,12 +15,7 @@ namespace Ensure.Web.Services
         /// Returns the specified user's current target
         /// </summary>
         /// <returns>The user's target</returns>
-        public Task<int> GetUserTarget(string userName);
-        /// <summary>
-        /// Generates a JWT (api auth) token for the specified user.
-        /// </summary>
-        /// <returns>The generated token</returns>
-        public string GenerateBearerToken(AppUser user);
+        public Task<int?> GetUserTarget(string userName);
         /// <summary>
         /// Returns the user info model for the specified user and it's token)
         /// </summary>
@@ -31,16 +26,25 @@ namespace Ensure.Web.Services
         /// </summary>
         /// <returns>The user info model</returns>
         public ApiUserInfo GetUserInfo(AppUser user, string jwtToken);
+        public Task<AppUser> FindByNameAsync(string username);
+
         /// <summary>
         /// Sends a reset password email to the specified user
         /// </summary>
         /// <param name="resetPasswordUrl">The reset password page url</param>
         public Task SendPasswordResetEmail(AppUser user, string resetPasswordUrl);
+        public bool CheckPassword(AppUser u, string password);
+
         /// <summary>
         /// Returns the user by it's id, AS READ-ONLY.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public Task<AppUser> FindByIdReadonlyAsync(string id);
+        public bool ValidatePasswordResetToken(AppUser u, string token);
+        public string GeneratePasswordResetToken(AppUser u);
+        Task<bool> CreateAsync(AppUser u, string password);
+        Task<AppUser> FindByEmailAsync(string email);
+        Task<bool> ResetPasswordAsync(AppUser u, string token, string newPassword);
     }
 }

@@ -3,10 +3,10 @@ using Ensure.Domain.Enums;
 using Ensure.Web.Data;
 using Ensure.Web.Helpers;
 using Ensure.Web.Models;
+using Ensure.Web.Security;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ namespace Ensure.Web.Controllers
     /// <summary>
     /// The Web UI Controller
     /// </summary>
-    [Authorize]
+    [Authorize(AuthenticationSchemes = SessionAuthConstants.Scheme)]
     [Route("/")]
     [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller

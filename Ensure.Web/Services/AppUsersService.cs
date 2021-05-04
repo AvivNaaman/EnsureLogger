@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Threading.Tasks;
 using Ensure.Web.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
@@ -15,46 +14,33 @@ using FluentEmail.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Ensure.Web.Options;
+using Ensure.Web.Models;
+using System.Text.Json;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
+using Ensure.Web.Security;
 
 namespace Ensure.Web.Services
 {
     public class AppUsersService : IAppUsersService
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly SendGridOptions sendGridOptions;
-        private readonly JwtOptions jwtOptions;
-        private readonly ISender emailSender;
-        private readonly ITemplateRenderer emailTemplateRenderer;
-        private readonly ApplicationDbContext context;
+        private readonly SendGridOptions _sendGridOptions;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ISender _emailSender;
+        private readonly ITemplateRenderer _emailTemplateRenderer;
 
-        public AppUsersService(UserManager<AppUser> userManager, IOptions<JwtOptions> jwtOptions, IOptions<SendGridOptions> sendGridOptions,
-            ISender emailSender, ITemplateRenderer emailTemplateRenderer, ApplicationDbContext _context)
+        public AppUsersService(ApplicationDbContext dbContext, IOptions<SendGridOptions> sendGridOptions,
+            ISender emailSender, ITemplateRenderer emailTemplateRenderer)
         {
-            _userManager = userManager;
-            this.sendGridOptions = sendGridOptions.Value;
-            this.jwtOptions = jwtOptions.Value;
-            this.emailSender = emailSender;
-            this.emailTemplateRenderer = emailTemplateRenderer;
-            context = _context;
+            _sendGridOptions = sendGridOptions.Value;
+            _dbContext = dbContext;
+            _emailSender = emailSender;
+            _emailTemplateRenderer = emailTemplateRenderer;
         }
 
         public Task<AppUser> FindByIdReadonlyAsync(string id)
-            => context.Users.AsNoTracking()
+            => _dbContext.Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
-
-        public string GenerateBearerToken(AppUser user)
-        {
-            var tokenDescriptor = new JwtSecurityToken(jwtOptions.Issuer, jwtOptions.Audience, claims: new List<Claim>()
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.Id),
-                        new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim(ClaimTypes.Email, user.Email),
-                },
-            expires: DateTime.UtcNow.AddDays(jwtOptions.DaysToExpire),
-            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
-                                                        SecurityAlgorithms.HmacSha256Signature));
-            return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-        }
 
         public async Task<ApiUserInfo> GetUserInfo(string userId, string jwtToken)
         {
@@ -74,8 +60,8 @@ namespace Ensure.Web.Services
             };
         }
 
-        public async Task<int> GetUserTarget(string userName)
-            => (await _userManager.FindByNameAsync(userName)).DailyTarget;
+        public async Task<int?> GetUserTarget(string userName)
+            => (await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName))?.DailyTarget;
 
         public async Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl)
         {
@@ -90,12 +76,13 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
 </html>
 ";
             const string subj = "Password Reset Email";
-            var token = await _userManager.GeneratePasswordResetTokenAsync(u);
+            // TODO: Generate using HMACSHA with json & sign, add validation IN THIS SERVICE
+            var token = GeneratePasswordResetToken(u);
             var encToken = System.Web.HttpUtility.UrlEncode(token);
             var encEmail = System.Web.HttpUtility.UrlEncode(u.Email);
-            var result = await new Email(emailTemplateRenderer, emailSender)
+            var result = await new Email(_emailTemplateRenderer, _emailSender)
                 .To(u.Email, u.UserName)
-                .SetFrom(sendGridOptions.FromAddress, "Ensure Logger")
+                .SetFrom(_sendGridOptions.FromAddress, "Ensure Logger")
                 .Subject(subj)
                 .UsingTemplate(template, new
                 {
@@ -106,14 +93,99 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
 
             if (!result.Successful)
                 throw new Exception(result.ErrorMessages.First());
-            
+
+        }
+
+        public string GeneratePasswordResetToken(AppUser u)
+        {
+            // Perhaps save creation time in db?
+            // Create model
+            PasswordResetTokenModel m = new()
+            {
+                Email = u.Email
+            };
+            // Encode to json
+            var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(m);
+            var b64Json = Convert.ToBase64String(jsonBytes);
+            // calculate hmacsha256 signature
+            var signature = new HMACSHA512(u.SecurityKey)
+                .ComputeHash(jsonBytes);
+            // base 64 both, seperate with '.'
+            return $"{b64Json}.{Convert.ToBase64String(signature)}";
+        }
+
+        public bool ValidatePasswordResetToken(AppUser u, string token)
+        {
+            if (u is null) return false;
+
+            // desirialize data
+            var s = token.Split('.');
+            var (b64json, signature) = (s[0], s[1]);
+            var jsonBytes = Convert.FromBase64String(b64json);
+            var j = JsonSerializer.Deserialize<PasswordResetTokenModel>(jsonBytes);
+            // validate all props of desirialized objects
+            if (j is null || j.Purpose != PasswordResetTokenModel.ResetPasswordPurpose
+                    || j.Email is null or "" || j.Produced == DateTime.MinValue) return false;
+
+            // validate signature
+            if (Convert.ToBase64String(
+                    new HMACSHA512(u.SecurityKey)
+                    .ComputeHash(jsonBytes)
+                ) != signature) return false;
+
+            return true;
         }
 
         public async Task SetUserTarget(int target, string userName)
         {
-            var u = await _userManager.FindByNameAsync(userName);
+            var u = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             u.DailyTarget = target;
-            await _userManager.UpdateAsync(u);
+            _dbContext.Update(u);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public Task<AppUser> FindByNameAsync(string username) => _dbContext.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName == username);
+
+        public bool CheckPassword(AppUser u, string password)
+        {
+            if (u is null) return false;
+            // validate that password hash in db is the same is hash of password param with same security key.
+            return u.PasswordHash.SequenceEqual(HashUserPassword(u,password));
+        }
+
+        public async Task<bool> CreateAsync(AppUser u, string password)
+        {
+            // TODO: Validate
+            u.PasswordHash = HashUserPassword(u, password);
+            _dbContext.Users.Add(u);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public Task<AppUser> FindByEmailAsync(string email) => _dbContext.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+        public async Task<bool> ResetPasswordAsync(AppUser u, string token, string newPassword)
+        {
+            if (!ValidatePasswordResetToken(u,token))
+            {
+                return false;
+            }
+            // TODO: Validate
+            var newPwdHash = HashUserPassword(u, newPassword);
+            u.PasswordHash = newPwdHash;
+
+            _dbContext.Update(u);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public byte[] HashUserPassword(AppUser u, string password)
+        {
+            if (u is null) return null;
+            return new HMACSHA512(u.SecurityKey).ComputeHash(Encoding.UTF8.GetBytes(password));
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ensure.Web.Areas.Admin.Services;
+using Ensure.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ensure.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = SessionAuthConstants.Scheme)]
     public class HomeController : Controller
     {
         private readonly IAdminService adminService;

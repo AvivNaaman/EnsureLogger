@@ -6,7 +6,6 @@ using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -25,14 +24,13 @@ namespace Ensure.Web.Controllers
     [ApiController]
     public class AccountApiController : ControllerBase
     {
-        private readonly UserManager<AppUser> _userManager;
         private readonly IAppUsersService _appUsersService;
+        private readonly ISigninService _signinService;
 
-        public AccountApiController(UserManager<AppUser> userManager
-            , IAppUsersService appUsersService)
+        public AccountApiController(IAppUsersService appUsersService, ISigninService signinService)
         {
-            _userManager = userManager;
             _appUsersService = appUsersService;
+            this._signinService = signinService;
         }
 
         [HttpGet]
@@ -47,10 +45,10 @@ namespace Ensure.Web.Controllers
         [Route("Login")]
         public async Task<ActionResult<ApiResponse<ApiUserInfo>>> Login(string username, string password)
         {
-            var u = await _userManager.FindByNameAsync(username);
-            if (await _userManager.CheckPasswordAsync(u, password))
+            var u = await _appUsersService.FindByNameAsync(username);
+            if (_appUsersService.CheckPassword(u, password))
             {
-                string jwtToken = _appUsersService.GenerateBearerToken(u);
+                string jwtToken = _signinService.GenerateApiLoginToken(u);
                 return new ApiResponse<ApiUserInfo>(_appUsersService.GetUserInfo(u, jwtToken));
             }
             else
@@ -87,12 +85,12 @@ namespace Ensure.Web.Controllers
                 Email = model.Email,
                 DailyTarget = model.DailyTarget
             };
-            var res = await _userManager.CreateAsync(u, model.Password);
-            if (res.Succeeded)
+            var res = await _appUsersService.CreateAsync(u, model.Password);
+            if (res)
             {
                 return await Login(model.UserName, model.Password);
             }
-            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res.Errors.Select(ie => ie.Description))));
+            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res/*.Errors.Select(ie => ie.Description)*/)));
         }
 
         [Route("ResetPassword")]
@@ -102,7 +100,7 @@ namespace Ensure.Web.Controllers
         {
             var link = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
                    + "/Account/ResetPasswordFinish";
-            var u = await _userManager.FindByEmailAsync(email);
+            var u = await _appUsersService.FindByEmailAsync(email);
             await _appUsersService.SendPasswordResetEmail(u, link);
             return Ok();
         }

@@ -1,9 +1,5 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<Ensure.Web.Data.AppUser> SignInManager
-@inject UserManager<Ensure.Web.Data.AppUser> UserManager
-
-<ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
+﻿<ul class="navbar-nav">
+@if (User.Identity.IsAuthenticated)
 {
     <li class="nav-item">
         <a  class="nav-link @(Context.Request.Path == "/Account/Profile" ? "active" : "")" asp-controller="Account" asp-action="Profile" title="Manage">Hi, @User.Identity.Name!</a>
