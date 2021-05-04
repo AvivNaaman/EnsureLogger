@@ -56,5 +56,19 @@ namespace Ensure.Web.Security
 
             return Task.FromResult(AuthenticateResult.Success(new(new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme.Name)), Scheme.Name)));
         }
+
+        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        {
+            var redirectUri = properties.RedirectUri;
+            if (string.IsNullOrEmpty(redirectUri))
+            {
+                redirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
+            }
+
+            var loginUri = Options.LoginPath + QueryString.Create(Options.ReturnUrlParameter, redirectUri);
+            var redirectContext = new RedirectContext<SessionAuthOptions>(Context, Scheme, Options, properties, BuildRedirectUri(loginUri));
+            redirectContext.Response.Redirect(redirectContext.RedirectUri);
+            return Task.CompletedTask;
+        }
     }
 }

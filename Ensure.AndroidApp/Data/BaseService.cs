@@ -4,6 +4,7 @@ using System.Security.Authentication;
 using Android.Content;
 using Android.Net;
 using Android.Support.V7.App;
+using Android.Util;
 using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp.Data
@@ -50,7 +51,7 @@ namespace Ensure.AndroidApp.Data
         /// Handles an HTTP error, thrown by the HttpClient used by the repository.
         /// </summary>
         /// <param name="message"></param>
-        protected void HandleHttpError(HttpResponseMessage message)
+        protected void HandleHttpError(HttpResponseMessage message, bool showErrorDialog)
         {
             // auth exception - throw up.
             if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -58,13 +59,14 @@ namespace Ensure.AndroidApp.Data
                 throw new AuthenticationException();
             }
             // general http error - show alert
-            else
+            else if (showErrorDialog)
             {
                 new AlertDialog.Builder(context)
                     .SetMessage($"HTTP Error {message.StatusCode} - {message.ReasonPhrase}")
                     .SetTitle("HTTP Error")
                     .Create().Show();
             }
+            LogHelper.Error($"HTTP Error {message.StatusCode} - {message.ReasonPhrase}");
         }
     }
 }

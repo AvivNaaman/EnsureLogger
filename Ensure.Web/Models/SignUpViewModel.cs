@@ -26,6 +26,5 @@ namespace Ensure.Web.Models
 		[Required]
 		[Display(Name = "Your Daily Target (you can change later)")]
 		public int DailyTarget { get; set; }
-		public int TimeZone { get; set; } = 2;
 	}
 }

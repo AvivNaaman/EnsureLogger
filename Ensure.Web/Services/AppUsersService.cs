@@ -45,6 +45,7 @@ namespace Ensure.Web.Services
         public async Task<ApiUserInfo> GetUserInfo(string userId, string jwtToken)
         {
             var u = await FindByIdReadonlyAsync(userId);
+            if (u is null) return null;
             return GetUserInfo(u, jwtToken);
         }
 

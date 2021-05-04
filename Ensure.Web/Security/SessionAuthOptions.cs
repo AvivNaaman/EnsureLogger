@@ -9,6 +9,8 @@ namespace Ensure.Web.Security
         public string CookieName { get; set; } = SessionAuthConstants.DefaultCookieName;
 
         public byte[] KeyBytes { get; set; }
+        public string LoginPath { get; set; } = "/Account/Login";
+        public string ReturnUrlParameter { get; set; } = "returnUrl";
     }
 
 }

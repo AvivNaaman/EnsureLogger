@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Mime;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
@@ -18,6 +17,9 @@ namespace Ensure.AndroidApp.Data
 
         private ISharedPreferences sharedPreferences;
         private EnsureApplication application;
+
+        public bool IsUserLoggedIn => CurrentUser != null;
+        public ApiUserInfo CurrentUser => application.UserInfo;
 
         public UserService(Context context) : base(context)
         {
@@ -47,6 +49,15 @@ namespace Ensure.AndroidApp.Data
             }
         }
 
+        /// <summary>
+        /// Registers the user and logs him in as the new account.
+        /// </summary>
+        /// <param name="userName">The new user's username</param>
+        /// <param name="email">The new user's email</param>
+        /// <param name="password">The new user's password</param>
+        /// <param name="pwdVertification">The new user's password vertification field value</param>
+        /// <param name="target">The new user's daily target</param>
+        /// <returns>whether operation succeeded</returns>
         public async Task<bool> RegiserUser(string userName, string email, string password,
             string pwdVertification, int target)
         {
@@ -65,12 +76,16 @@ namespace Ensure.AndroidApp.Data
 
             if (!res.IsSuccessStatusCode) return false;
 
-            var info = JsonConvert.DeserializeObject<ApiUserInfo>(await res.Content.ReadAsStringAsync());
-            application.UserInfo = info;
+            var info = JsonConvert.DeserializeObject<ApiResponse<ApiUserInfo>>(await res.Content.ReadAsStringAsync());
+            application.UserInfo = info.Response;
             SaveUserInfoToSp();
             return true;
         }
 
+        /// <summary>
+        /// Requests a password reset email for the user with the specified email address.
+        /// </summary>
+        /// <param name="email">The user's email address</param>
         public Task RequestPasswordResetEmail(string email)
         {
             return http.GetAsync($"/api/Account/ResetPassword?email={email}");
@@ -114,13 +129,14 @@ namespace Ensure.AndroidApp.Data
         /// Refreshes the user's info and returns it.
         /// </summary>
         /// <returns>The user's updates info</returns>
-        public async Task<ApiUserInfo> RefreshInfo()
+        public async Task<ApiUserInfo> RefreshInfo(bool showErrorDialog = true)
         {
             if (!IsInternetConnectionAvailable()) return null; // can't refresh!
             var res = await http.GetAsync("/api/Account/GetInfo");
             if (!res.IsSuccessStatusCode)
             {
-                HandleHttpError(res);
+                HandleHttpError(res, showErrorDialog);
+                return null;
             }
             var info = JsonConvert.DeserializeObject<ApiUserInfo>(await res.Content.ReadAsStringAsync());
             info.JwtToken = application.UserInfo.JwtToken;
@@ -128,9 +144,6 @@ namespace Ensure.AndroidApp.Data
             SaveUserInfoToSp(); // save updated info locally
             return info;
         }
-
-        public bool IsUserLoggedIn => CurrentUser != null;
-        public ApiUserInfo CurrentUser => application.UserInfo;
 
         [Obsolete]
         /// <summary>
@@ -145,7 +158,7 @@ namespace Ensure.AndroidApp.Data
                 var res = await http.PostAsync($"/api/Account/SetTarget?target={target}");
                 if (!res.IsSuccessStatusCode)
                 {
-                    HandleHttpError(res);
+                    HandleHttpError(res, true);
                     return false;
                 }
                 CurrentUser.DailyTarget = target;
@@ -164,7 +177,7 @@ namespace Ensure.AndroidApp.Data
                 var res = await http.PostAsync($"/api/Account/SetInfo", c);
                 if (!res.IsSuccessStatusCode)
                 {
-                    HandleHttpError(res);
+                    HandleHttpError(res, true);
                     return;
                 }
                 CurrentUser.DailyTarget = newInfo.DailyTarget;

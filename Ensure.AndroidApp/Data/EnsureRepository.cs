@@ -5,11 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Net;
-using Android.Support.V7.App;
 using Android.Util;
 using Ensure.AndroidApp.Helpers;
 using Ensure.Domain;
@@ -63,7 +60,7 @@ namespace Ensure.AndroidApp.Data
         /// </summary>
         /// <param name="date">The logged date</param>
         /// <returns>A list of logs logged in date</returns>
-        public async Task<List<InternalEnsureLog>> GetLogs(DateTime date, bool forceCache = false)
+        public async Task<List<InternalEnsureLog>> GetLogs(DateTime date, bool forceCache = false, bool showErrorDialog = true)
         {
             List<InternalEnsureLog> ensures;
             if (IsInternetConnectionAvailable() && !forceCache) // if there's internet AND not forcing cache, fetch & update cache:
@@ -72,7 +69,7 @@ namespace Ensure.AndroidApp.Data
                 var res = await http.GetAsync($"/api/Ensure/GetLogs?date={dateQuery}");
                 if (!res.IsSuccessStatusCode)
                 {
-                    HandleHttpError(res);
+                    HandleHttpError(res, showErrorDialog);
                     return null;
                 }
                 var ensuresList = JsonConvert.DeserializeObject<ApiEnsuresList>(await res.Content.ReadAsStringAsync());
@@ -131,7 +128,7 @@ namespace Ensure.AndroidApp.Data
                 {
                     if (!res.IsSuccessStatusCode) // failure
                     {
-                        HandleHttpError(res);
+                        HandleHttpError(res, true);
                         return null;
                     }
                     else
@@ -167,7 +164,7 @@ namespace Ensure.AndroidApp.Data
                 {
                     if (!res.IsSuccessStatusCode)
                     {
-                        HandleHttpError(res);
+                        HandleHttpError(res, true);
                         return;
                     }
                     // remove from local
@@ -220,7 +217,7 @@ namespace Ensure.AndroidApp.Data
                 {
                     if (!res.IsSuccessStatusCode)
                     {
-                        HandleHttpError(res);
+                        HandleHttpError(res, true);
                         return;
                     }
 
@@ -266,7 +263,7 @@ namespace Ensure.AndroidApp.Data
             }
             catch (Exception ex)
             {
-                Log.Error("EnsureLog", ex.ToString());
+                LogHelper.Error(ex.ToString());
                 Console.WriteLine(ex);
                 Debug.WriteLine(ex);
             }

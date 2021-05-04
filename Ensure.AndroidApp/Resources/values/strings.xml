@@ -54,7 +54,7 @@
 	<string name="ESITasteNamePlaceholder">Taste</string>
 	<string name="ESITasteImgDescription">Ensure Taste to add</string>
 
-	<!-- Data -->
+	<!-- Data & Connectivity info -->
 	<string name="DbName">EnsureStore.db</string>
 	<string name="SpName">EnsureSp</string>
 	<string name="UserInfoPreferenceName">UserInfo</string>

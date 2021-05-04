@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,14 +31,15 @@ namespace Ensure.Web.Controllers
         public AccountApiController(IAppUsersService appUsersService, ISigninService signinService)
         {
             _appUsersService = appUsersService;
-            this._signinService = signinService;
+            _signinService = signinService;
         }
 
         [HttpGet]
         [Route("GetInfo")]
         public async Task<ActionResult<ApiUserInfo>> GetInfo()
         {
-            return await _appUsersService.GetUserInfo(User.GetId(), null);
+            var info = await _appUsersService.GetUserInfo(User.GetId(), null);
+            return info is null ? StatusCode((int)HttpStatusCode.Unauthorized) : info;
         }
 
         [HttpGet]
@@ -46,7 +48,7 @@ namespace Ensure.Web.Controllers
         public async Task<ActionResult<ApiResponse<ApiUserInfo>>> Login(string username, string password)
         {
             var u = await _appUsersService.FindByNameAsync(username);
-            if (_appUsersService.CheckPassword(u, password))
+            if (u is not null && _appUsersService.CheckPassword(u, password))
             {
                 string jwtToken = _signinService.GenerateApiLoginToken(u);
                 return new ApiResponse<ApiUserInfo>(_appUsersService.GetUserInfo(u, jwtToken));

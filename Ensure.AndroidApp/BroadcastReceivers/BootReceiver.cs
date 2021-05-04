@@ -27,7 +27,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            Log.Info("EnsureLogger", "Boot Completed and boot event fired!");
+            LogHelper.Info( "Boot Completed and boot event fired!");
             // schedule next notification
             NotificationHelper.ScheduleEnsureCheckNotification(context, DateTime.Now.AddMinutes(1));
         }

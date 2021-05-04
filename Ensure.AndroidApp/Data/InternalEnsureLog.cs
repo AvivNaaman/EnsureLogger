@@ -4,6 +4,9 @@ using SQLite;
 
 namespace Ensure.AndroidApp.Data
 {
+    /// <summary>
+    /// The SQLite entity for caching ensure log information.
+    /// </summary>
     [Table("EnsureLogs")]
     public class InternalEnsureLog : EnsureLog
     {

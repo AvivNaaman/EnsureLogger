@@ -18,7 +18,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
 
         public override async void OnReceive(Context context, Intent intent)
         {
-            Log.Info("EnsureLog", "Notification receiver called!");
+            LogHelper.Info("Notification receiver called!");
             try
             {
                 // just call NotificationHelper.Notify(,,)
@@ -30,7 +30,12 @@ namespace Ensure.AndroidApp.BroadcastReceivers
                 }
                 var userInfo = await userSvc.RefreshInfo();
                 var progress = (await ensureRepository.GetLogs(DateTime.MinValue)).Count;
-                Log.Info("EnsureLog", $"Got info from server: {progress}/{userInfo.DailyTarget}");
+                if (userInfo is null || progress < 0)
+                {
+                    LogHelper.Error("An error has occured while refreshing user info and log count in notification receiver.");
+                    return;
+                }
+                LogHelper.Info($"Got info from server: {progress}/{userInfo.DailyTarget}");
 
                 if (userInfo.DailyTarget > progress)
                 {
@@ -48,7 +53,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
             }
             catch (Exception e)
             {
-                Log.Error("EnsureLog", $"ERROR! Message: `{e.Message}` StackTrace: `{e.StackTrace}`");
+                LogHelper.Error($"ERROR! Message: `{e.Message}` StackTrace: `{e.StackTrace}`");
             }
         }
     }
