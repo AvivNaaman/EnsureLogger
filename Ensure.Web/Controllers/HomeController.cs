@@ -11,11 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Ensure.Web.Controllers
@@ -30,14 +26,11 @@ namespace Ensure.Web.Controllers
     {
         private readonly IEnsureService _ensureService;
         private readonly IAppUsersService usersService;
-        private readonly ILogger<HomeController> logger;
 
-        public HomeController(IEnsureService ensureService, IAppUsersService usersService,
-            ILogger<HomeController> logger)
+        public HomeController(IEnsureService ensureService, IAppUsersService usersService)
         {
             _ensureService = ensureService;
             this.usersService = usersService;
-            this.logger = logger;
         }
 
         /* Redirect App base (~/) to Logs (~/Logs). Cahce for performance */
@@ -52,20 +45,13 @@ namespace Ensure.Web.Controllers
         [Route("Logs/{date?}")]
         public async Task<IActionResult> Logs(string date)
         {
-            Stopwatch s = new();
-            s.Start();
-            logger.LogInformation("Started {0}", s.Elapsed);
             // try parse, on failue just get today.
             DateTime d = date.FastParseFormattedDate() ?? DateTime.UtcNow;
-            logger.LogInformation("Got Utc date, Started logs {0}", s.Elapsed);
 
-            logger.LogInformation("Parsed DT, Started logs {0}", s.Elapsed);
             var currDayLogs = await _ensureService.GetLogsByDay(User.GetId(), d.Date);
 
-            logger.LogInformation("Finished logs, Started user {0}", s.Elapsed);
             var u = await usersService.FindByIdReadonlyAsync(User.GetId());
 
-            logger.LogInformation("Finished user {0}", s.Elapsed);
             var vm = new HomeViewModel()
             {
                 Logs = currDayLogs,
@@ -124,8 +110,5 @@ namespace Ensure.Web.Controllers
             return RedirectToAction("Logs", new { date });
         }
         #endregion
-
-
-
     }
 }

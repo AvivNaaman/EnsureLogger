@@ -26,7 +26,7 @@ namespace Ensure.AndroidApp.Helpers
 
 		public HttpClient BuildClient()
 		{
-			var app = ((EnsureApplication)context.ApplicationContext);
+			var app = (EnsureApplication)context.ApplicationContext;
 			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
 
 			// set base address

@@ -31,7 +31,7 @@ namespace Ensure.AndroidApp.Data
         /// <summary>
         /// The full path to the local database file
         /// </summary>
-        string dbPath;
+        private string dbPath;
 
         /// <summary>
         /// Constructs a new ensure repository.
@@ -42,6 +42,9 @@ namespace Ensure.AndroidApp.Data
             dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DBName);
         }
 
+        /// <summary>
+        /// Opens the database connection for the file in dbPath
+        /// </summary>
         private void OpenDbConnection()
         {
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Personal))) Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Personal));
@@ -49,6 +52,9 @@ namespace Ensure.AndroidApp.Data
             db.CreateTableAsync<InternalEnsureLog>().GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// Closes the opened database connection
+        /// </summary>
         private void CloseDbConnection()
         {
             db.CloseAsync().GetAwaiter().GetResult();
@@ -235,7 +241,10 @@ namespace Ensure.AndroidApp.Data
             }
         }
 
-        public IEnumerable<InternalEnsureLog> MapServerLogsToInternal(IEnumerable<EnsureLog> input)
+        /// <summary>
+        /// Converts all input EnsureLog objects to InternalEnsureLog, setting the sync state as synced
+        /// </summary>
+        private IEnumerable<InternalEnsureLog> MapServerLogsToInternal(IEnumerable<EnsureLog> input)
         {
             foreach (var item in input)
             {

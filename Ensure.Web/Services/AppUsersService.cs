@@ -4,10 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Threading.Tasks;
 using Ensure.Web.Data;
-using Microsoft.IdentityModel.Tokens;
 using System.Linq;
-using System.Security.Claims;
-using Microsoft.Extensions.Configuration;
 using Ensure.Domain.Models;
 using FluentEmail.Core.Interfaces;
 using FluentEmail.Core;
@@ -17,8 +14,6 @@ using Ensure.Web.Options;
 using Ensure.Web.Models;
 using System.Text.Json;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Http;
-using Ensure.Web.Security;
 
 namespace Ensure.Web.Services
 {

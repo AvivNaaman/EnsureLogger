@@ -15,14 +15,11 @@ namespace Ensure.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IAppUsersService _appUsersService;
-        private readonly IEnsureService _ensureService;
         private readonly ISigninService _signinService;
 
-        public AccountController(IAppUsersService appUsersService,
-            IEnsureService ensureService, ISigninService signinService)
+        public AccountController(IAppUsersService appUsersService, ISigninService signinService)
         {
             _appUsersService = appUsersService;
-            _ensureService = ensureService;
             _signinService = signinService;
         }
 
