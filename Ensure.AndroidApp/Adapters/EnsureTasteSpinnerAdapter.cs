@@ -33,10 +33,11 @@ namespace Ensure.AndroidApp.Adapters
 
         public View GetItemView(EnsureTaste taste, ViewGroup parent)
         {
+            // inflate item
             var baseItem = LayoutInflater.From(parent.Context)
                 .Inflate(Resource.Layout.ensure_taste_spinner_item, parent, false);
 
-            // set layout text & image
+            // set layout text + drink image
             baseItem.FindViewById<TextView>(Resource.Id.TasteSpinnerItemTv).Text = taste.ToString();
             baseItem.FindViewById<ImageView>(Resource.Id.TasteSpinnerItemIv)
                 .SetImageResource(
@@ -48,6 +49,9 @@ namespace Ensure.AndroidApp.Adapters
             return baseItem;
         }
 
+        /// <summary>
+        /// A list of all the enabled tastes to add
+        /// </summary>
         public List<EnsureTaste> EnabledTastes { get; }
     }
 }

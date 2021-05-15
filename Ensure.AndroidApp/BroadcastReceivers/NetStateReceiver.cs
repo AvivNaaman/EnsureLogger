@@ -1,17 +1,6 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.Net;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using Xamarin.Essentials;
+using Ensure.AndroidApp.Helpers;
 
 namespace Ensure.AndroidApp.BroadcastReceivers
 {
@@ -56,8 +45,8 @@ namespace Ensure.AndroidApp.BroadcastReceivers
         /// <param name="context">The network context</param>
         public void RefreshState(Context context)
         {
-            ConnectivityManager connMgr = (ConnectivityManager)context
-                .GetSystemService(Context.ConnectivityService);
+            ConnectivityManager connMgr = context
+                .GetSystemService<ConnectivityManager>(Context.ConnectivityService);
             PrevState = CurrState;
             CurrState = connMgr.ActiveNetworkInfo.IsConnected;
         }

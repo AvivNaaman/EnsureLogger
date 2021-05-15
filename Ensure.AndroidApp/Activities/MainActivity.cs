@@ -15,6 +15,7 @@ using Android.Views;
 using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.BroadcastReceivers;
 using System.Security.Authentication;
+using Ensure.AndroidApp.Services;
 
 namespace Ensure.AndroidApp
 {

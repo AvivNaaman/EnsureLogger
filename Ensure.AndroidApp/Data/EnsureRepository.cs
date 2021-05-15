@@ -7,8 +7,8 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Util;
 using Ensure.AndroidApp.Helpers;
+using Ensure.AndroidApp.Services;
 using Ensure.Domain;
 using Ensure.Domain.Entities;
 using Ensure.Domain.Enums;
@@ -19,7 +19,7 @@ using SQLite;
 namespace Ensure.AndroidApp.Data
 {
     /// <summary>
-    /// A synced respository for ensure logs
+    /// A repository service for the logs
     /// </summary>
     public class EnsureRepository : BaseService
     {

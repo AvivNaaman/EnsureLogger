@@ -4,8 +4,8 @@ using Android.OS;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
-using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
+using Ensure.AndroidApp.Services;
 
 namespace Ensure.AndroidApp
 {
@@ -55,7 +55,7 @@ namespace Ensure.AndroidApp
             else
             {
                 int prevTarget = userService.CurrentUser.DailyTarget;
-                if (!await userService.SetUserTarget(parsedTarget)) // TODO: Migrate to FULL user details update
+                if (!await userService.SetUserTarget(parsedTarget)) 
                 {
                     target.Text = prevTarget.ToString(); // error
                 }

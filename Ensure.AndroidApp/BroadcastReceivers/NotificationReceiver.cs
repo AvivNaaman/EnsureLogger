@@ -1,8 +1,8 @@
 ﻿using System;
 using Android.Content;
-using Android.Util;
 using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
+using Ensure.AndroidApp.Services;
 
 namespace Ensure.AndroidApp.BroadcastReceivers
 {
@@ -28,8 +28,11 @@ namespace Ensure.AndroidApp.BroadcastReceivers
                 {
                     userSvc.LoadUserInfoFromSp(); // Load from SP all the user's info. We may call this after boot!
                 }
+                // pull saved info
                 var userInfo = await userSvc.RefreshInfo();
                 var progress = (await ensureRepository.GetLogs(DateTime.MinValue)).Count;
+
+                // error has occured during information updating - stop.
                 if (userInfo is null || progress < 0)
                 {
                     LogHelper.Error("An error has occured while refreshing user info and log count in notification receiver.");
@@ -39,7 +42,9 @@ namespace Ensure.AndroidApp.BroadcastReceivers
 
                 if (userInfo.DailyTarget > progress)
                 {
-                    NotificationHelper.NotifyEnsure(context, progress, userInfo);
+                    var ns = new NotificationsService(context);
+                    // notify user to drink
+                    ns.NotifyEnsure(progress, userInfo);
 
                     // schedule next one
                     int left = userInfo.DailyTarget - progress;
@@ -47,7 +52,8 @@ namespace Ensure.AndroidApp.BroadcastReceivers
                     var allowdHoursTimeSpan = EndTime - StartTime; // total allowd time at a day
                     var notificationsDelay = allowdHoursTimeSpan / (left + 1); // delay between current notification & next one
 
-                    NotificationHelper.ScheduleEnsureCheckNotification(context, DateTime.Now.Add(notificationsDelay));
+                    // schedule next check
+                    ns.ScheduleEnsureCheckNotification(DateTime.Now.Add(notificationsDelay));
                 }
 
             }

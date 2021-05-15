@@ -1,5 +1,4 @@
-﻿using System;
-using Ensure.Domain.Entities;
+﻿using Ensure.Domain.Entities;
 using SQLite;
 
 namespace Ensure.AndroidApp.Data

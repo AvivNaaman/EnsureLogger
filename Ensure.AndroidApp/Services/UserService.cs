@@ -4,14 +4,18 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Ensure.AndroidApp.Data;
+using Ensure.AndroidApp.Helpers;
 using Ensure.Domain.Models;
 using Newtonsoft.Json;
 
-namespace Ensure.AndroidApp.Data
+namespace Ensure.AndroidApp.Services
 {
+    /// <summary>
+    /// A service class to manage the identity of the current user and it's information.
+    /// </summary>
     public class UserService : BaseService
     {
-
         private string SharedPrefernceName;
         private string UserInfoSharedPreference;
 
@@ -44,6 +48,9 @@ namespace Ensure.AndroidApp.Data
                 {
                     application.UserInfo = res.Response;
                     SaveUserInfoToSp();
+
+                    var ns = new NotificationsService(context);
+                    ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(10));
                 }
                 return res;
             }
@@ -100,6 +107,9 @@ namespace Ensure.AndroidApp.Data
             application.UserInfo = null;
             SaveUserInfoToSp();
             await new EnsureRepository(context).ClearAllCache();
+
+            var ns = new NotificationsService(context);
+            ns.CancelAllScheduled();
         }
 
         #region SharePreference
@@ -145,7 +155,6 @@ namespace Ensure.AndroidApp.Data
             return info;
         }
 
-        [Obsolete]
         /// <summary>
         /// Sets and syncs the user's daily target
         /// </summary>
@@ -166,23 +175,6 @@ namespace Ensure.AndroidApp.Data
                 return true;
             }
             return false;
-        }
-
-        public async Task SetInfo(ApiUserInfo newInfo)
-        {
-            if (IsUserLoggedIn && IsInternetConnectionAvailable())
-            {
-                var j = JsonConvert.SerializeObject(new { newInfo.DailyTarget });
-                var c = new StringContent(j, Encoding.UTF8, MediaTypeNames.Application.Json);
-                var res = await http.PostAsync($"/api/Account/SetInfo", c);
-                if (!res.IsSuccessStatusCode)
-                {
-                    HandleHttpError(res, true);
-                    return;
-                }
-                CurrentUser.DailyTarget = newInfo.DailyTarget;
-                SaveUserInfoToSp(); // save updates locally
-            }
         }
     }
 }

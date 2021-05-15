@@ -7,7 +7,7 @@ using Android.Support.V7.App;
 using Android.Util;
 using Ensure.AndroidApp.Helpers;
 
-namespace Ensure.AndroidApp.Data
+namespace Ensure.AndroidApp.Services
 {
     /// <summary>
     /// A base class for an online service, including HTTP helper
@@ -40,7 +40,7 @@ namespace Ensure.AndroidApp.Data
         /// <returns>Whether internet connection is available</returns>
         protected bool IsInternetConnectionAvailable()
         {
-            var mgr = (ConnectivityManager)context.GetSystemService(Context.ConnectivityService);
+            var mgr = context.GetSystemService<ConnectivityManager>(Context.ConnectivityService);
             NetworkInfo netInfo = mgr.ActiveNetworkInfo;
             return netInfo != null && netInfo.IsConnected;
         }

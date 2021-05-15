@@ -1,25 +1,16 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Util;
-using Android.Views;
-using Android.Widget;
-using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.Helpers;
+using Ensure.AndroidApp.Services;
 using static Android.Manifest;
 
 namespace Ensure.AndroidApp.BroadcastReceivers
 {
     /// <summary>
-    /// A broadcast receiver which fires on phone start,
-    /// and re-starts the notification alarms cycle
+    /// Receivs and handles the device's power on event -
+    /// starts the notification scheduler
     /// </summary>
     [BroadcastReceiver(Enabled = true, Exported = false, Permission = Permission.ReceiveBootCompleted)]
     [IntentFilter(new string[] { Intent.ActionBootCompleted })] // auto register to power event
@@ -29,7 +20,8 @@ namespace Ensure.AndroidApp.BroadcastReceivers
         {
             LogHelper.Info( "Boot Completed and boot event fired!");
             // schedule next notification
-            NotificationHelper.ScheduleEnsureCheckNotification(context, DateTime.Now.AddMinutes(1));
+            NotificationsService ns = new(context);
+            ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(1));
         }
     }
 }

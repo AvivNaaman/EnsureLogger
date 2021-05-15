@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace Ensure.AndroidApp.Helpers
 {
+	/// <summary>
+    /// A helper class to manage HTTP connectiions to the api, including authorization info and relevant headers.
+    /// </summary>
 	public class HttpHelper
 	{
 		public Uri baseUrl { get; private set; } 

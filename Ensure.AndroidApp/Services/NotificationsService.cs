@@ -5,24 +5,37 @@ using Android.Content;
 using Android.OS;
 using Ensure.AndroidApp.BroadcastReceivers;
 using Ensure.Domain.Models;
+using Ensure.AndroidApp.Helpers;
 
-namespace Ensure.AndroidApp.Helpers
+namespace Ensure.AndroidApp.Services
 {
     /// <summary>
-    /// Contains helper methods for handling the notification
-    /// management and scheduling in the app
+    /// A service to manage the notification scheduling and pushing.
     /// </summary>
-    public static class NotificationHelper
+    public class NotificationsService
     {
+        private readonly Context context;
+
+        /// <summary>
+        /// Constucts a new notifications service
+        /// </summary>
+        public NotificationsService(Context context)
+        {
+            this.context = context;
+        }
+
+        /// <summary>
+        /// A constant notification id (so it can be removed later)
+        /// </summary>
         const int NotificationId = 1;
 
         /// <summary>
         /// Schedules a check for the current drinking status
         /// </summary>
         /// <param name="schedule">The next date to check on</param>
-        public static void ScheduleEnsureCheckNotification(Context context, DateTime schedule)
+        public  void ScheduleEnsureCheckNotification(DateTime schedule)
         {
-            var alarm = (AlarmManager)context.GetSystemService(Context.AlarmService);
+            var alarm = context.GetSystemService<AlarmManager>(Context.AlarmService);
             long scheduleAsMillisecs = (long)schedule.ToUniversalTime().Subtract(
                 new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
 
@@ -33,14 +46,24 @@ namespace Ensure.AndroidApp.Helpers
             alarm.SetExactAndAllowWhileIdle(AlarmType.Rtc, scheduleAsMillisecs, pIntent);
         }
 
+        public  void CancelAllScheduled()
+        {
+            var alarm = context.GetSystemService<AlarmManager>(Context.AlarmService);
+            var intent = new Intent(context, typeof(EnsureNotificationReceiver));
+            var pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.NoCreate);
+
+            alarm.Cancel(pi);
+        }
+
         /// <summary>
         /// Notifies the user to drink
         /// </summary>
         /// <param name="progress">Current progress</param>
         /// <param name="info">Current user's info</param>
-        public static void NotifyEnsure(Context context, int progress, ApiUserInfo info)
+        public  void NotifyEnsure(int progress, ApiUserInfo info)
         {
-            var notifications = (NotificationManager)context.GetSystemService(Context.NotificationService);
+            // get all relevant constants from xml
+            var notifications = context.GetSystemService<NotificationManager>(Context.NotificationService);
             var channelId = context.GetString(Resource.String.EnsureNotificationChannelId);
             var channelName = context.GetString(Resource.String.EnsureNotificationChannelName);
             var channelDesc = context.GetString(Resource.String.EnsureNotificationChannelDesc);

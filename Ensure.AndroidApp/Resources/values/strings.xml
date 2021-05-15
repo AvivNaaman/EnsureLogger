@@ -58,5 +58,5 @@
 	<string name="DbName">EnsureStore.db</string>
 	<string name="SpName">EnsureSp</string>
 	<string name="UserInfoPreferenceName">UserInfo</string>
-	<string name="ApiUrl">http://10.0.2.2:5000/</string>
+	<string name="ApiUrl">https://ensurelog.azurewebsites.net/</string>
 </resources>

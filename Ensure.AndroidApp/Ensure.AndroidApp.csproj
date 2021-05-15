@@ -91,23 +91,21 @@
     <Compile Include="Activities\ProfileActivity.cs" />
     <Compile Include="Data\EnsureRepository.cs" />
     <Compile Include="Data\InternalEnsureLog.cs" />
-    <Compile Include="Data\UserService.cs" />
-    <Compile Include="Data\BaseService.cs" />
     <Compile Include="Activities\HistoryActivity.cs" />
     <Compile Include="BroadcastReceivers\NetStateReceiver.cs" />
     <Compile Include="Adapters\EnsureTasteSpinnerAdapter.cs" />
     <Compile Include="Data\EnsureSyncState.cs" />
     <Compile Include="Activities\ILoadingStatedActivity.cs" />
-    <Compile Include="Helpers\NotificationHelper.cs" />
     <Compile Include="BroadcastReceivers\NotificationReceiver.cs" />
     <Compile Include="BroadcastReceivers\BootReceiver.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\ContextHelpers.cs" />
+    <Compile Include="Services\UserService.cs" />
+    <Compile Include="Services\NotificationsService.cs" />
+    <Compile Include="Services\BaseService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
-    <None Include="Assets\AboutAssets.txt" />
-    <None Include="..\.editorconfig" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_main.xml">
@@ -192,6 +190,7 @@
     <Folder Include="Data\" />
     <Folder Include="BroadcastReceivers\" />
     <Folder Include="Resources\xml\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">

@@ -14,8 +14,12 @@ namespace Ensure.AndroidApp.Adapters
     /// </summary>
 	public class EnsureRecyclerAdapter : RecyclerView.Adapter
 	{
+		/// <summary>
+        /// The currently displayed data
+        /// </summary>
 		public List<InternalEnsureLog> Items { get; set; }
 
+		// handlers for events
 		public event EventHandler<EnsureRecyclerAdapterClickEventArgs> ItemClick;
 		public event EventHandler<EnsureRecyclerAdapterClickEventArgs> ItemLongClick;
 

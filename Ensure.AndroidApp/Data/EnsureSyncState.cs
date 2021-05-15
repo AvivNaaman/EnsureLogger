@@ -1,6 +1,9 @@
 ﻿using System;
 namespace Ensure.AndroidApp.Data
 {
+    /// <summary>
+    /// Represents the state of the log against the server
+    /// </summary>
     public enum EnsureSyncState
     {
         /// <summary> Log is synced with server. </summary>
