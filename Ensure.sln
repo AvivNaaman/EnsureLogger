@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30626.31
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ensure.Web", "Ensure.Web\Ensure.Web.csproj", "{4C9D28FA-667A-4CE2-9A5A-DF5E0131E005}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ensure.Web", "Ensure.Web\Ensure.Web.csproj", "{4C9D28FA-667A-4CE2-9A5A-DF5E0131E005}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ensure.Domain", "Ensure.Domain\Ensure.Domain.csproj", "{E5C09734-6AB5-408A-A62D-04F0F88AC54F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ensure.AndroidApp", "Ensure.AndroidApp\Ensure.AndroidApp.csproj", "{7ECE205C-3AFA-46EB-ACD2-642E26E59132}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{644AEA8C-29AA-470E-9D6A-F1033A5EDBD2}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,5 +40,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D9378EBF-9461-48BA-A0BD-7A8FD2E0EF6B}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		version = 2.0.0
 	EndGlobalSection
 EndGlobal

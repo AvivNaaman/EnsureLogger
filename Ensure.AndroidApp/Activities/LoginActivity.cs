@@ -2,113 +2,165 @@
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Util;
-using Android.Views;
 using Android.Widget;
+using Ensure.AndroidApp.Services;
 using Ensure.AndroidApp.Helpers;
-using Ensure.Domain.Models;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Text;
 
 namespace Ensure.AndroidApp
 {
-	[Activity(Label = "LoginActivity")]
-	public class LoginActivity : Activity
-	{
-		private EditText userNameEt, pwdEt;
-		private Button goBtn;
-		private ProgressBar topLoadingProgress;
-		protected override void OnCreate(Bundle savedInstanceState)
-		{
-			base.OnCreate(savedInstanceState);
-			SetContentView(Resource.Layout.login_layout);
+    [Activity(Label = "Login")]
+    public class LoginActivity : Activity, ILoadingStatedActivity
+    {
+        private EditText userNameEt, pwdEt;
+        private Button submitBtn, registerBtn, resetBtn;
+        private ProgressBar topLoadingProgress;
 
-			userNameEt = FindViewById<EditText>(Resource.Id.LoginUserNameEt);
-			pwdEt = FindViewById<EditText>(Resource.Id.LoginPasswordEt);
+        private UserService userService;
 
-			topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.LoginActivityTopProgress);
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            SetContentView(Resource.Layout.activity_login);
 
-			goBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
-			goBtn.Click += LoginBtnClicked;
-		}
+            userService = new UserService(this);
 
-		private async void LoginBtnClicked(object sender, EventArgs e)
-		{
-			Log.Debug("LoginActivity", "btn clicked");
-			string username = userNameEt.Text, pwd = pwdEt.Text;
-			if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
-			{
-				return;
-			}
-			try
-			{
-				SetUiLoadingState(true);
+            userNameEt = FindViewById<EditText>(Resource.Id.LoginUserNameEt);
+            pwdEt = FindViewById<EditText>(Resource.Id.LoginPasswordEt);
 
-				// Fetch
-				var http = new HttpHelper(this);
-				var res = await http.GetAsync($"/api/Account/login?username={username}&password={pwd}");
+            topLoadingProgress = FindViewById<ProgressBar>(Resource.Id.LoginActivityTopProgress);
 
-				if (!res.IsSuccessStatusCode)
-				{
-					if (res.StatusCode.HasFlag(System.Net.HttpStatusCode.BadRequest)) // Auth failed
-						throw new AuthenticationException("User name and password do not match.");
-					else throw new AuthenticationException($"Error: Status code {res.StatusCode} does not indicate success.");
-				}
-				string content = await res.Content.ReadAsStringAsync();
-				// Json
-				try
-				{
-					Log.Debug("Login", $"Hello {content} END");
-					var userInfo = JsonConvert.DeserializeObject<ApiUserInfo>(content);
-					// Handle response
-					if (userInfo != null)
-					{
-						// logged in successfully! get back to MainActivity
-						((EnsureApplication)ApplicationContext).UpdateUserInfo(userInfo);
-						SetResult(Result.Ok);
-						Finish();
-						return;
-					}
-					else
-					{
-						throw new AuthenticationException("Authentication failed.");
-					}
+            submitBtn = FindViewById<Button>(Resource.Id.LoginBtnGo);
+            submitBtn.Click += LoginBtnClicked;
 
-				}
-				catch (JsonException jEx)
-				{
-					Log.Error("JsonLogin", $"Json Parse failed. response: {content}, message: {jEx.Message}");
-					throw new AuthenticationException("Error: Failed to parse response from server.");
-				}
-			}
-			// something failed
-			catch (AuthenticationException aEx)
-			{
-				// Remove Password
-				pwdEt.Text = String.Empty;
-				// Show error alert
-				var builder = new AlertDialog.Builder(this);
-				builder.SetTitle("Login failed");
-				builder.SetMessage(aEx.Message);
-				builder.SetPositiveButton("OK", (e, sender) => { });
-				builder.Create().Show();
-				SetUiLoadingState(false);
-			}
-		}
+            registerBtn = FindViewById<Button>(Resource.Id.LoginRegisterBtn);
+            registerBtn.Click += RegisterBtnClicked;
 
-		private void SetUiLoadingState(bool isLoading)
-		{
-			topLoadingProgress.Indeterminate = isLoading;
-			goBtn.Clickable = goBtn.Enabled = goBtn.Focusable = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
-		}
+            resetBtn = FindViewById<Button>(Resource.Id.LoginResetPwdBtn);
+            resetBtn.Click += ResetBtn_Click;
+        }
 
-		public override void OnBackPressed()
-		{
-			// Prevent user from leaving activity!
-		}
-	}
+        #region Handlers
+        /// <summary>
+        /// Event handler for Reset Password button click
+        /// opens the reset password dialog
+        /// </summary>
+        private void ResetBtn_Click(object sender, EventArgs e)
+        {
+            Dialog d = new Dialog(this);
+            d.SetContentView(Resource.Layout.dialog_pwd_reset);
+            d.SetCancelable(true);
+            d.SetTitle("Reset Password");
+            d.Create();
+            d.Show();
+            var btn = d.FindViewById<Button>(Resource.Id.ResetPwdDialogBtn);
+            var et = d.FindViewById<EditText>(Resource.Id.ResetPwdDialogEt);
+            btn.Click +=
+                (s, e) => DialogResetPwdBtn_Click(d, btn, et);
+        }
+
+        /// <summary>
+        /// Event handler for reset password dialog inner button click
+        /// Validates the entered email & sends the reset request to the server
+        /// </summary>
+        /// <param name="d">The shown dialog</param>
+        /// <param name="btn">The dialog's action button</param>
+        /// <param name="emailEt">The dialog's edit text for the email address</param>
+        private async void DialogResetPwdBtn_Click(Dialog d, Button btn, EditText emailEt)
+        {
+            // get typed email, validate & post
+            var email = emailEt.Text;
+            if (ValidationHelpers.ValidateEmail(email, this))
+            {
+                btn.Enabled = false; // disable modal submit button
+                SetUiLoadingState(true);
+                d.SetCancelable(false); // prevent dialog closing
+                await userService.RequestPasswordResetEmail(email); // request password reset
+                d.Cancel(); // close dialog
+                SetUiLoadingState(false);
+                Toast.MakeText(this, "Done. Check your inbox to continue.", ToastLength.Long).Show();
+            }
+            else Toast.MakeText(this, "Invalid email address", ToastLength.Long);
+        }
+
+        /// <summary>
+        /// Starts the register activity
+        /// </summary>
+        private void RegisterBtnClicked(object sender, EventArgs e)
+        {
+            // Start Register activity WITH result 
+            var i = new Intent(this, typeof(RegisterActivity));
+            StartActivityForResult(i, (int)ActivityResults.Register);
+        }
+
+        /// <summary>
+        /// Validates and logs in the user
+        /// </summary>
+        private async void LoginBtnClicked(object sender, EventArgs e)
+        {
+            // uname / password null check
+            string username = userNameEt.Text, pwd = pwdEt.Text;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(pwd))
+            {
+                return;
+            }
+
+            // try login
+            SetUiLoadingState(true);
+            var loginResult = await userService.LogUserIn(username, pwd);
+            if (!loginResult.IsError) // login successful
+            {
+                SetResult(Result.Ok);
+                Finish();
+            }
+            else // login failed
+            {
+                // Remove Password
+                pwdEt.Text = string.Empty;
+                // Show error alert
+                new AlertDialog.Builder(this)
+                    .SetTitle("Login failed")
+                    .SetMessage(loginResult.ErrorMessage)
+                    .SetCancelable(true)
+                    .Create().Show();
+            }
+            SetUiLoadingState(false);
+        }
+        #endregion
+
+        public void SetUiLoadingState(bool isLoading)
+        {
+            topLoadingProgress.Indeterminate = isLoading;
+            resetBtn.Enabled = registerBtn.Enabled = submitBtn.Enabled
+                = userNameEt.Enabled = pwdEt.Enabled = !isLoading;
+        }
+
+        // prevent the Finish() call by default so user won't be able to "escape" login
+        public override void OnBackPressed() { }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            switch ((ActivityResults)requestCode)
+            {
+                case ActivityResults.Register:
+                    // if user registerted succesfully, go to main activity (because he's logged in!)
+                    if (resultCode == Result.Ok)
+                    {
+                        Finish();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            base.OnActivityResult(requestCode, resultCode, data);
+        }
+
+        /// <summary>
+        /// The Activity Results for the current activity
+        /// </summary>
+        private enum ActivityResults
+        {
+            Register
+        };
+    }
 }

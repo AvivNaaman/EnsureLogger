@@ -7,30 +7,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Ensure.AndroidApp.Helpers
 {
-	// TODO: Move to GetJsonAsync<TResult> & PostJsonAsync<TResult>
+	/// <summary>
+    /// A helper class to manage HTTP connectiions to the api, including authorization info and relevant headers.
+    /// </summary>
 	public class HttpHelper
 	{
-		public Uri BaseUrl { get; } = new Uri("https://ensurelog.azurewebsites.net");
+		public Uri baseUrl { get; private set; } 
 		private readonly Context context;
 
 		public HttpHelper(Context context)
 		{
 			this.context = context;
+			baseUrl = new Uri(context.GetString(Resource.String.ApiUrl));
 		}
 
 		public HttpClient BuildClient()
 		{
-
+			var app = (EnsureApplication)context.ApplicationContext;
 			HttpClient client = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
-			var app = ((EnsureApplication)context.ApplicationContext);
+
+			// set base address
+			client.BaseAddress = baseUrl;
+			// accept json only
+			client.DefaultRequestHeaders.Accept.Clear();
+			client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
+			// set auth header if user logged in
 			if (app.UserInfo != null)
 			{
-				var bearerToken = app.UserInfo.JwtToken;
+				var bearerToken = app.UserInfo.JwtToken; // get token
 				client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", bearerToken);
 			}
 			return client;
@@ -38,7 +48,7 @@ namespace Ensure.AndroidApp.Helpers
 
 		public Task<HttpResponseMessage> GetAsync(string realtiveUrl)
 		{
-			return BuildClient().GetAsync(new Uri(BaseUrl, realtiveUrl));
+			return BuildClient().GetAsync(realtiveUrl);
 		}
 
 		public Task<HttpResponseMessage> PostAsync(string realtiveUrl)
@@ -48,7 +58,7 @@ namespace Ensure.AndroidApp.Helpers
 
 		public Task<HttpResponseMessage> PostAsync(string realtiveUrl, HttpContent content)
 		{
-			return BuildClient().PostAsync(new Uri(BaseUrl, realtiveUrl), content);
+			return BuildClient().PostAsync(realtiveUrl, content);
 		}
 	}
 }

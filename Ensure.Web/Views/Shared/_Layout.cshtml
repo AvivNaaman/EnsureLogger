@@ -3,13 +3,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ensure.Web</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>@ViewData["Title"] - Ensure</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-dark.min.css"  media="(prefers-color-scheme: dark)" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"  media="(prefers-color-scheme: light)" />
+	
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Ensure.Web</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -19,7 +21,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(Context.Request.Path.ToString().Split('/')?[1] == "Logs" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -35,12 +37,13 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2020 - Ensure Logger Web - <a href="https://github.com/avivnaaman/EnsureLogger">GitHub</a>
+            &copy; @DateTime.Now.Year - Ensure Logger [Web-2.0.0] - <a href="https://dev.azure.com/avivnaaman/EnsureLogger" target="_blank">Source</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

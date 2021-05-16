@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	<!-- Loading bar on top -->
+	<ProgressBar
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+		android:indeterminateOnly="false"
+		android:layout_marginTop="-6dp"
+		tools:ignore="HardcodedSize,NegativeMargin"
+		android:paddingTop="0dp"
+		android:id="@+id/RegisterActivityTopProgress"/>
+	<!-- Main content -->
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:padding="17sp">
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/RegisterWelcomeText"
+			android:textSize="15sp"
+			android:gravity="center_horizontal"
+			android:paddingBottom="17sp"/>
+
+		<!-- Form Fields -->
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:hint="@string/RegisterUserNameHint"
+			android:id="@+id/RegisterUserNameEt"
+			android:inputType="text"/>
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:hint="@string/RegisterEmailHint"
+			android:id="@+id/RegisterEmailEt"
+			android:inputType="textEmailAddress"/>
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/RegisterPasswordEt"
+			android:hint="@string/RegisterPwdHint"
+			android:inputType="textPassword"/>
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/RegisterPasswordVertificationEt"
+			android:hint="@string/RegisterPwdVertificationHint"
+			android:inputType="textPassword"/>
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/RegisterTargetEt"
+			android:hint="@string/RegisterTargetHint"
+			android:inputType="numberDecimal"/>
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal"
+			android:paddingHorizontal="45sp"
+			android:text="@string/RegisterBtnText"
+			android:id="@+id/RegisterBtnGo"/>
+	</LinearLayout>
+</LinearLayout>
