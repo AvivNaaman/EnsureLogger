@@ -5,17 +5,8 @@ using Ensure.Web.Models;
 using Ensure.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Ensure.Web.Controllers
@@ -59,14 +50,6 @@ namespace Ensure.Web.Controllers
             }
         }
 
-        [Obsolete("Should be replaced by Get/SetInfo")]
-        [Route("GetTarget")]
-        [HttpGet]
-        public async Task<ActionResult<int>> GetTarget()
-        {
-            return await _appUsersService.GetUserTarget(User.Identity.Name);
-        }
-
         [Route("SetTarget")]
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> SetTarget(int target)
@@ -88,11 +71,11 @@ namespace Ensure.Web.Controllers
                 DailyTarget = model.DailyTarget
             };
             var res = await _appUsersService.CreateAsync(u, model.Password);
-            if (res)
+            if (res.Succeeded)
             {
                 return await Login(model.UserName, model.Password);
             }
-            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res/*.Errors.Select(ie => ie.Description)*/)));
+            else return BadRequest(new ApiResponse<ApiUserInfo>(string.Join(" \n", res.Errors)));
         }
 
         [Route("ResetPassword")]

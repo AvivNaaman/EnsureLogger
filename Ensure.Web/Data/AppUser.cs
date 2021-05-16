@@ -27,7 +27,7 @@ namespace Ensure.Web.Data
         /// <summary>
         /// A unique value to validate & hash the password with
         /// </summary>
-        public byte[] SecurityKey { get; set; } = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString("N")); // TODO: Find a better way to generate the salt.
+        public byte[] SecurityKey { get; set; } = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString("N")); 
         /// <summary>
         /// The hashed password
         /// </summary>

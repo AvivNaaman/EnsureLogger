@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Ensure.Web.Data;
 using Ensure.Web.Models;
 using Ensure.Web.Security;
@@ -83,15 +80,14 @@ namespace Ensure.Web.Controllers
             };
 
             var res = await _appUsersService.CreateAsync(u, model.Password);
-            if (res)
+            if (res.Succeeded)
             {
                 _signinService.SessionLogin(u);
                 return RedirectToAction("Logs", "Home");
             }
             else
             {
-                // TODO: Support more error information
-                ModelState.AddModelError("","Error Of Somekind");
+                res.Errors.ForEach(e => ModelState.AddModelError("", e));
                 return View(model);
             }
         }
@@ -113,10 +109,10 @@ namespace Ensure.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateTarget([FromForm] int dailyTarget)
         {
-            if (dailyTarget > 0)
+            var res = await _appUsersService.SetUserTarget(dailyTarget, User.Identity.Name);
+            if (!res.Succeeded)
             {
-                await _appUsersService.SetUserTarget(dailyTarget, User.Identity.Name);
-                return RedirectToAction(nameof(Profile));
+                res.Errors.ForEach(e => ModelState.AddModelError("", e)); // tODO: show on client side!
             }
             return RedirectToAction(nameof(Profile));
         }
@@ -133,7 +129,9 @@ namespace Ensure.Web.Controllers
             var link = $"{Request.Scheme}://{Request.Host}{Request.PathBase}"
                 + "/Account/ResetPasswordFinish";
             var u = await _appUsersService.FindByEmailAsync(email);
-            await _appUsersService.SendPasswordResetEmail(u, link);
+
+            if (u is not null)
+                await _appUsersService.SendPasswordResetEmail(u, link);
             return RedirectToAction(nameof(ResetPasswordSent));
         }
 
@@ -146,7 +144,7 @@ namespace Ensure.Web.Controllers
         public async Task<IActionResult> ResetPasswordFinish(string email, string token)
         {
             var u = await _appUsersService.FindByEmailAsync(email);
-            return  u is null ? // if user not found, return not found
+            return u is null ? // if user not found, return not found
                 NotFound() : // otherwise, return the page with the info
                 View(new PasswordResetViewModel { UserName = u.UserName, Token = token });
         }
@@ -163,10 +161,9 @@ namespace Ensure.Web.Controllers
             var u = await _appUsersService.FindByNameAsync(model.UserName);
             if (u is null) return NotFound();
             var res = await _appUsersService.ResetPasswordAsync(u, model.Token, model.NewPassword);
-            if (!res)
+            if (!res.Succeeded)
             {
-                //res.Errors.ToList().ForEach(e => ModelState.AddModelError("", e.Description));
-                ModelState.AddModelError("", "ERR!"); // TODO: Add real error if exists.
+                res.Errors.ForEach(e => ModelState.AddModelError("", e));
                 model.NewPassword = model.NewPasswordVertification = string.Empty;
                 return View(model);
             }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Ensure.Domain.Models;
 using Ensure.Web.Data;
+using Ensure.Web.Models;
 
 namespace Ensure.Web.Services
 {
@@ -10,22 +11,21 @@ namespace Ensure.Web.Services
         /// <summary>
         /// Updates the specified user's target to the specified target
         /// </summary>
-        public Task SetUserTarget(int target, string userName);
-        /// <summary>
-        /// Returns the specified user's current target
-        /// </summary>
-        /// <returns>The user's target</returns>
-        public Task<int?> GetUserTarget(string userName);
+        public Task<UserResultModel> SetUserTarget(int target, string userName);
+
         /// <summary>
         /// Returns the user info model for the specified user and it's token)
         /// </summary>
         /// <returns>The user info model</returns>
         public Task<ApiUserInfo> GetUserInfo(string userName, string jwtToken);
+
         /// <summary>
         /// Build a user info model out of the specified user and it's token
         /// </summary>
         /// <returns>The user info model</returns>
         public ApiUserInfo GetUserInfo(AppUser user, string jwtToken);
+
+
         public Task<AppUser> FindByNameAsync(string username);
 
         /// <summary>
@@ -33,6 +33,7 @@ namespace Ensure.Web.Services
         /// </summary>
         /// <param name="resetPasswordUrl">The reset password page url</param>
         public Task SendPasswordResetEmail(AppUser user, string resetPasswordUrl);
+
         public bool CheckPassword(AppUser u, string password);
 
         /// <summary>
@@ -41,10 +42,17 @@ namespace Ensure.Web.Services
         /// <param name="id"></param>
         /// <returns></returns>
         public Task<AppUser> FindByIdReadonlyAsync(string id);
+
         public bool ValidatePasswordResetToken(AppUser u, string token);
+
         public string GeneratePasswordResetToken(AppUser u);
-        Task<bool> CreateAsync(AppUser u, string password);
+
+        Task<UserResultModel> CreateAsync(AppUser u, string password);
+
         Task<AppUser> FindByEmailAsync(string email);
-        Task<bool> ResetPasswordAsync(AppUser u, string token, string newPassword);
+
+        Task<UserResultModel> ResetPasswordAsync(AppUser u, string token, string newPassword);
+
+        public Task DeleteAsync(AppUser u);
     }
 }

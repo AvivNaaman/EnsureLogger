@@ -4,6 +4,7 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using Android.App;
 using Android.Content;
+using Ensure.Domain.Helpers;
 
 namespace Ensure.AndroidApp.Helpers
 {
@@ -12,16 +13,13 @@ namespace Ensure.AndroidApp.Helpers
     /// </summary>
     public static class ValidationHelpers
     {
-        // Regular expression for checking password
-        private static Regex pwdRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$^+=!*()@%&]).{8,}$");
-
         /// <summary>
         /// Returns whether the given password is valid,
         /// And shows an error dialog if not.
         /// </summary>
         public static bool ValidatePassword(string password, Context context)
         {
-            if (pwdRegex.IsMatch(password))
+            if (UserDataValidator.ValidatePassword(password))
             {
                 return true;
             }
@@ -39,14 +37,30 @@ namespace Ensure.AndroidApp.Helpers
         /// </summary>
         public static bool ValidateEmail(string email, Context context)
         {
-            MailAddress e;
-            try
+            if (UserDataValidator.ValidateEmail(email))
             {
-                e = new MailAddress(email);
                 return true;
-            } catch
-            {
+            }
+            else { 
                 ShowErrorDialog("Invalid email address.", context);
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns whether the given email address is valid,
+        /// and shows an error dialog if not.
+        /// </summary>
+        public static bool ValidateUserName(string email, Context context)
+        {
+            if (UserDataValidator.ValidateUserName(email))
+            {
+                return true;
+            }
+            else
+            {
+                ShowErrorDialog("Invalid user name", context);
                 return false;
             }
         }
@@ -58,14 +72,14 @@ namespace Ensure.AndroidApp.Helpers
         /// <param name="values">The string values to check</param>
         public static bool ValidateFilled(Context context, params string[] values)
         {
-            if (values.Any(v => string.IsNullOrEmpty(v)))
+            if (UserDataValidator.ValidateNotNullOrEmpty(values))
             {
-                ShowErrorDialog("All fields must be filled.", context);
-                return false;
+                return true;
             }
             else
             {
-                return true;
+                ShowErrorDialog("All fields must be filled.", context);
+                return false;
             }
         }
 

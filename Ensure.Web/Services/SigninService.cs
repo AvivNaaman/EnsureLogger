@@ -55,7 +55,12 @@ namespace Ensure.Web.Services
             var cookie = $"{Convert.ToBase64String(jsonBytes)}.{Convert.ToBase64String(signature)}";
 
             _httpContext.Response.Cookies.Delete(SessionAuthConstants.DefaultCookieName);
-            _httpContext.Response.Cookies.Append(SessionAuthConstants.DefaultCookieName, cookie);
+            _httpContext.Response.Cookies.Append(SessionAuthConstants.DefaultCookieName, cookie, new()
+            {
+                Secure = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict
+            });
 
             return true;
         }
