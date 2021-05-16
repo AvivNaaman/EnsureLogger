@@ -5,6 +5,7 @@
     <UserSecretsId>aspnet-Ensure.Web-6F3D5271-1864-4BAE-B8F8-BD0724B34C8C</UserSecretsId>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
         <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+        <ReleaseVersion>2.0.0</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>

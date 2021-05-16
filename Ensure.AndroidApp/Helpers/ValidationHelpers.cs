@@ -41,7 +41,8 @@ namespace Ensure.AndroidApp.Helpers
             {
                 return true;
             }
-            else { 
+            else
+            {
                 ShowErrorDialog("Invalid email address.", context);
                 return false;
             }
@@ -97,6 +98,16 @@ namespace Ensure.AndroidApp.Helpers
                            .SetMessage(message)
                            .SetCancelable(true)
                            .Create().Show();
+            }
+        }
+
+        public static bool ValidateTarget(string target, Context context)
+        {
+            if (int.TryParse(target, out int t) && t >= 0) return true;
+            else
+            {
+                ShowErrorDialog("Target should be an integer with a value of at least 0.", context);
+                return false;
             }
         }
     }

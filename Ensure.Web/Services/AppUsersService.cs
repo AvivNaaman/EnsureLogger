@@ -22,16 +22,14 @@ namespace Ensure.Web.Services
     {
         private readonly SendGridOptions _sendGridOptions;
         private readonly ApplicationDbContext _dbContext;
-        private readonly ISender _emailSender;
-        private readonly ITemplateRenderer _emailTemplateRenderer;
+        private readonly IAsyncEmailQueue _emailQueue;
 
         public AppUsersService(ApplicationDbContext dbContext, IOptions<SendGridOptions> sendGridOptions,
-            ISender emailSender, ITemplateRenderer emailTemplateRenderer)
+            IAsyncEmailQueue emailQueue)
         {
             _sendGridOptions = sendGridOptions.Value;
             _dbContext = dbContext;
-            _emailSender = emailSender;
-            _emailTemplateRenderer = emailTemplateRenderer;
+            _emailQueue = emailQueue;
         }
 
         #region ApiGetInfo
@@ -57,7 +55,7 @@ namespace Ensure.Web.Services
 
         #region PasswordReset 
 
-        public async Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl)
+        public Task SendPasswordResetEmail(AppUser u, string resetPasswordUrl)
         {
             // Razor template for the HTML email
             const string template = @"
@@ -76,20 +74,13 @@ Hi, @Model.UserName, click <a href=""@Model.ResetUrl"">here</a> to begin your pa
             var encToken = System.Web.HttpUtility.UrlEncode(token);
             var encEmail = System.Web.HttpUtility.UrlEncode(u.Email);
             // build email and send it
-            var result = await new Email(_emailTemplateRenderer, _emailSender)
-                .To(u.Email, u.UserName)
-                .SetFrom(_sendGridOptions.FromAddress, "Ensure Logger")
-                .Subject(subj)
-                .UsingTemplate(template, new
-                {
-                    u.UserName,
-                    u.Email,
-                    ResetUrl = resetPasswordUrl + "?token=" + encToken + "&email=" + encEmail
-                }).SendAsync();
-
-            if (!result.Successful)
-                throw new Exception(result.ErrorMessages.First());
-
+            _emailQueue.AddToQueue((_sendGridOptions.FromAddress, "Ensure Logger"), (u.Email, u.UserName), subj, template, new
+            {
+                u.UserName,
+                u.Email,
+                ResetUrl = resetPasswordUrl + "?token=" + encToken + "&email=" + encEmail
+            });
+            return Task.CompletedTask;
         }
 
         public string GeneratePasswordResetToken(AppUser u)

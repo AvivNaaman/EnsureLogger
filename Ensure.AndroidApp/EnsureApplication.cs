@@ -1,21 +1,12 @@
 ﻿using Android.App;
-using Android.Content;
-using Android.OS;
 using Android.Runtime;
-using Android.Util;
-using Android.Views;
-using Android.Widget;
 using Ensure.Domain.Models;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Ensure.AndroidApp
 {
 	/// <summary>
-    /// Holds the state information of the application
+    /// Holds the global application state, so as defines important data.
     /// </summary>
 	[Application(
 		Debuggable =
@@ -30,7 +21,11 @@ namespace Ensure.AndroidApp
 	
 	class EnsureApplication : Application
 	{
+		/// <summary>
+        /// Hold the currently logged on user info
+        /// </summary>
 		public ApiUserInfo UserInfo { get; set; }
+
 		public EnsureApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}

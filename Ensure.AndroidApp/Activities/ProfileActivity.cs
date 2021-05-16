@@ -35,6 +35,7 @@ namespace Ensure.AndroidApp
 
             userService = new UserService(this);
 
+            // show back error on top
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
 
             // load UI
@@ -47,15 +48,11 @@ namespace Ensure.AndroidApp
         private async void SaveTargetBtn_Click(object sender, EventArgs e)
         {
             SetUiLoadingState(true);
-            int parsedTarget;
-            if (string.IsNullOrWhiteSpace(target.Text) || (parsedTarget = int.Parse(target.Text)) <= 0)
-            {
-                ValidationHelpers.ShowErrorDialog("Please enter a valid target.", this);
-            }
-            else
+            // validate
+            if (ValidationHelpers.ValidateTarget(target.Text, this))
             {
                 int prevTarget = userService.CurrentUser.DailyTarget;
-                if (!await userService.SetUserTarget(parsedTarget)) 
+                if (!await userService.SetUserTarget(int.Parse(target.Text)))
                 {
                     target.Text = prevTarget.ToString(); // error
                 }

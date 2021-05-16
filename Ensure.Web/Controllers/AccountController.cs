@@ -107,14 +107,18 @@ namespace Ensure.Web.Controllers
         [HttpPost]
         [Authorize(AuthenticationSchemes = SessionAuthConstants.Scheme)]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateTarget([FromForm] int dailyTarget)
+        public async Task<IActionResult> UpdateTarget([FromForm] int dailyTarget, bool returnHome)
         {
             var res = await _appUsersService.SetUserTarget(dailyTarget, User.Identity.Name);
             if (!res.Succeeded)
             {
                 res.Errors.ForEach(e => ModelState.AddModelError("", e)); // tODO: show on client side!
             }
-            return RedirectToAction(nameof(Profile));
+
+            if (returnHome)
+                return RedirectToAction("Logs", "Home");
+            else
+                return RedirectToAction(nameof(Profile));
         }
 
         #region PasswordReset

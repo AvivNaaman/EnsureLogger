@@ -17,7 +17,7 @@ namespace Ensure.Web.Helpers
                 var splitted = input.Split("-"); // split to 3 params
                 if (splitted.Length < 3) return null; // if no 3, failed
                 // init new datetime
-                return new DateTime(int.Parse(splitted[2]), int.Parse(splitted[1]), int.Parse(splitted[0]));
+                return new DateTime(int.Parse(splitted[0]), int.Parse(splitted[1]), int.Parse(splitted[2]));
             }
             catch { }
             return null;

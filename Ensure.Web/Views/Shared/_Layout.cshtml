@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ensure.Web</title>
+    <title>@ViewData["Title"] - Ensure</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-dark.min.css"  media="(prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"  media="(prefers-color-scheme: light)" />
 	
@@ -37,12 +37,13 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2020 - Ensure Logger Web - <a href="https://dev.azure.com/avivnaaman/EnsureLogger" target="_blank">Sources</a>
+            &copy; @DateTime.Now.Year - Ensure Logger [Web-2.0.0] - <a href="https://dev.azure.com/avivnaaman/EnsureLogger" target="_blank">Source</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

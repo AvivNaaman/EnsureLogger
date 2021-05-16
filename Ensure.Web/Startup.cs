@@ -61,6 +61,8 @@ namespace Ensure.Web
                 .AddRazorRenderer()
                 .AddSendGridSender(Configuration["SendGrid:ApiKey"]);
 
+            services.AddSingleton<IAsyncEmailQueue, AsyncEmailQueue>();
+
             services.AddScoped<IEnsureService, EnsureService>();
             services.AddScoped<IAppUsersService, AppUsersService>();
             services.AddScoped<ISigninService, SigninService>();
