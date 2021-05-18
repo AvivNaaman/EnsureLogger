@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Account\" />
     <Folder Include="wwwroot\images\" />
     <Folder Include="Areas\" />
     <Folder Include="Areas\Admin\" />

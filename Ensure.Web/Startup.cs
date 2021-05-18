@@ -72,7 +72,7 @@ namespace Ensure.Web
             {
                 cookie.LoginPath = "/Account/Login";
                 cookie.LogoutPath = "/Account/Logout";
-                cookie.AccessDeniedPath = "/Account/AccessDenied"; // TODO: Implement!
+                cookie.AccessDeniedPath = "/Account/AccessDenied";
             });
 
             services.AddSwaggerGen(s =>
