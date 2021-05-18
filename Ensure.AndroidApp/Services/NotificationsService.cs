@@ -93,7 +93,7 @@ namespace Ensure.AndroidApp.Services
             var notification = notificationBuilder
                     .SetContentTitle(title)
                     .SetContentText(txt)
-                    .SetSmallIcon(Resource.Drawable.notification_action_background)
+                    .SetSmallIcon(Resource.Drawable.droplet)
                     .SetContentIntent(
                         PendingIntent.GetActivity(
                             context, 0, new Intent(context, typeof(MainActivity)),

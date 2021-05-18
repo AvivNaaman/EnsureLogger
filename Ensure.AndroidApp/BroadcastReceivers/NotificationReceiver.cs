@@ -13,8 +13,6 @@ namespace Ensure.AndroidApp.BroadcastReceivers
     [BroadcastReceiver]
     public class EnsureNotificationReceiver : BroadcastReceiver
     {
-        DateTime EndTime = DateTime.Today.AddHours(22); // 22:00
-        DateTime StartTime = DateTime.Today.AddHours(8); // 8:00
 
         public override async void OnReceive(Context context, Intent intent)
         {
@@ -49,11 +47,17 @@ namespace Ensure.AndroidApp.BroadcastReceivers
                     // schedule next one
                     int left = userInfo.DailyTarget - progress;
 
-                    var allowdHoursTimeSpan = EndTime - StartTime; // total allowd time at a day
+                    // TODO: Rethink over the calculations here.
+                    // need: base for that day + (delay * progress) or something like that.
+                    // make sure that it works in other dates, too.
+                    var allowdHoursTimeSpan = DateTime.Today.AddHours(22) - DateTime.Today.AddHours(8); // total allowd time at a day
                     var notificationsDelay = allowdHoursTimeSpan / (left + 1); // delay between current notification & next one
 
-                    // schedule next check
-                    ns.ScheduleEnsureCheckNotification(DateTime.Now.Add(notificationsDelay));
+                    if (notificationsDelay > TimeSpan.Zero)
+                    {
+                        // schedule next check
+                        ns.ScheduleEnsureCheckNotification(DateTime.Now + notificationsDelay);
+                    }
                 }
 
             }
