@@ -9,7 +9,11 @@ using System;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "Login")]
+    /// <summary>
+    /// Allows the user to log in with his account or navigate to register, 
+    /// so as to request a password reset.
+    /// </summary>
+    [Activity(Label = "@string/LoginLabel")]
     public class LoginActivity : Activity, ILoadingStatedActivity
     {
         private EditText userNameEt, pwdEt;
@@ -143,7 +147,7 @@ namespace Ensure.AndroidApp
             switch ((ActivityResults)requestCode)
             {
                 case ActivityResults.Register:
-                    // if user registerted succesfully, go to main activity (because he's logged in!)
+                    // if user registerted succesfully (therefore logged in), go straight to main activity (because he's logged in!)
                     if (resultCode == Result.Ok)
                     {
                         Finish();

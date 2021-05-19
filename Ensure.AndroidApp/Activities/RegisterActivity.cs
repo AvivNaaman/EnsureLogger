@@ -10,7 +10,10 @@ using static Ensure.AndroidApp.Helpers.ValidationHelpers;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "Join Us")]
+    /// <summary>
+    /// Allows the user to create a new account.
+    /// </summary>
+    [Activity(Label = "@string/RegisterLabel")]
     public class RegisterActivity : AppCompatActivity, ILoadingStatedActivity
     {
         private ProgressBar topLoadingProgress;

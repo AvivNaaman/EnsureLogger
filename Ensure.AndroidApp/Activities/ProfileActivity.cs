@@ -9,7 +9,10 @@ using Ensure.AndroidApp.Services;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "Profile & Account")]
+    /// <summary>
+    /// Allows the user to update his preferences and personal information
+    /// </summary>
+    [Activity(Label = "@string/ProfileLabel")]
     public class ProfileActivity : AppCompatActivity, ILoadingStatedActivity
     {
         private TextView userName, email;

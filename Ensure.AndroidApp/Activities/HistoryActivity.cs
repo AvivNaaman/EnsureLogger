@@ -13,7 +13,10 @@ using Ensure.AndroidApp.Data;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "Manage History")]
+    /// <summary>
+    /// Displays the user it's drinking history and allows him to remove and browse through logs.
+    /// </summary>
+    [Activity(Label = "@string/HistoryLabel")]
     public class HistoryActivity : AppCompatActivity, ILoadingStatedActivity
     {
         // RecyclerView essentials
@@ -167,12 +170,25 @@ namespace Ensure.AndroidApp
         /// <summary> Ensure RecyclerView swipe/move event handler class - for deletion </summary>
         private class EnsureLogTouchHelper : ItemTouchHelper.Callback
         {
+            /// <summary>
+            /// Whether to "Enable" the recycler view swipings
+            /// </summary>
             public bool EnableSwipe { get; set; }
 
+            /// <summary>
+            /// Fires when an item is recycled.
+            /// </summary>
+            /// <param name="viewHolder"></param>
             public delegate void ItemRecycledEvent(RecyclerView.ViewHolder viewHolder);
 
+            /// <summary>
+            /// Triggers when an item is recycled (moved out of screen)
+            /// </summary>
             public event ItemRecycledEvent OnItemRecycled;
 
+            /// <summary>
+            /// Specifies how an item can move in the recycler view
+            /// </summary>
             public override int GetMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
             {
                 int dragFlags = ItemTouchHelper.Up | ItemTouchHelper.Down;
@@ -180,11 +196,17 @@ namespace Ensure.AndroidApp
                 return MakeMovementFlags(dragFlags, swipeFlags);
             }
 
+            /// <summary>
+            /// Fires on movment of an item in the recycler view
+            /// </summary>
             public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
             {
                 return true;
             }
 
+            /// <summary>
+            /// Fires on swipe of an item in the recycler view
+            /// </summary>
             public override void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
             {
                 OnItemRecycled?.Invoke(viewHolder); // invoke event if has subscribers

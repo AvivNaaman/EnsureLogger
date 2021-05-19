@@ -54,8 +54,9 @@ namespace Ensure.AndroidApp.Services
         public void CancelAllScheduled()
         {
             var alarm = context.GetSystemService<AlarmManager>(Context.AlarmService);
+
             var intent = new Intent(context, typeof(EnsureNotificationReceiver));
-            var pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.NoCreate);
+            var pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.OneShot);
 
             alarm.Cancel(pi);
         }
@@ -106,7 +107,7 @@ namespace Ensure.AndroidApp.Services
             const int EndTime = 21;
 
             int drinksLeft = userInfo.DailyTarget - progress;
-            var timeUntilEnd = DateTime.Now - DateTime.Today.AddHours(EndTime);
+            var timeUntilEnd = DateTime.Today.AddHours(EndTime) - DateTime.Now ;
 
             if (drinksLeft > 0 && // if the user should drink more today
                DateTime.Now.Hour >= StartTime &&

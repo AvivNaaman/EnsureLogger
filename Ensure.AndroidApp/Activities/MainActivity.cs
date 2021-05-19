@@ -19,7 +19,7 @@ using Ensure.AndroidApp.Services;
 
 namespace Ensure.AndroidApp
 {
-    [Activity(Label = "@string/app_name", MainLauncher = true)]
+    [Activity(Label = "@string/MainLabel", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, ILoadingStatedActivity
     {
         private List<InternalEnsureLog> ensures = new List<InternalEnsureLog>();
@@ -49,6 +49,8 @@ namespace Ensure.AndroidApp
         private NetStateReceiver netStateReceiver; // network state listener
 
         private ImageButton historyBtn, profileBtn; // profile/history image buttons
+
+        private IMenuItem logoutMenuItem;
         #endregion
 
         #region Lifecycle
@@ -257,8 +259,9 @@ namespace Ensure.AndroidApp
         /// <param name="isLoading"></param>
         public void SetUiLoadingState(bool isLoading)
         {
-            topLoadingProgress.Indeterminate = isLoading; // "disabled"
+            topLoadingProgress.Indeterminate = isLoading;
             mainLayout.Enabled = addBtn.Enabled = !isLoading;
+            logoutMenuItem.SetEnabled(!isLoading);
         }
 
 
@@ -303,6 +306,12 @@ namespace Ensure.AndroidApp
                     break;
             }
             return base.OnOptionsItemSelected(item);
+        }
+
+        public override bool OnPrepareOptionsMenu(IMenu menu)
+        {
+            logoutMenuItem = menu.FindItem(Resource.Id.action_logout);
+            return base.OnPrepareOptionsMenu(menu);
         }
         #endregion
 
