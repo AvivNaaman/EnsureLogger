@@ -5,7 +5,7 @@ using Ensure.AndroidApp.Helpers;
 namespace Ensure.AndroidApp.BroadcastReceivers
 {
     /// <summary>
-    /// A Broadcast Receiver to track network connectivity changes & trigger events
+    /// A Broadcast Receiver to track network connectivity changes & trigger events when it received some
     /// </summary>
     [BroadcastReceiver]
     public class NetStateReceiver : BroadcastReceiver
@@ -13,17 +13,23 @@ namespace Ensure.AndroidApp.BroadcastReceivers
         /// <summary>
         /// An event handler to a network state change event
         /// </summary>
-        /// <param name="isNetConnected">whether the network is available</param>
-        /// <param name="prevState">whether network was available</param>
+        /// <param name="isNetConnected">whether the network is currently available</param>
+        /// <param name="prevState">whether network was previously available</param>
         public delegate void NetworkStateChangedHandler(bool isNetConnected, bool prevState);
 
         /// <summary>
-        /// Calles when there's a change in the network state
+        /// Called when there's a change in the network state
         /// </summary>
         public event NetworkStateChangedHandler NetworkStateChanged;
 
+        /// <summary>
+        /// Whether the device is currently online
+        /// </summary>
         public bool CurrState { get; set; }
 
+        /// <summary>
+        /// Whether the device was previously online
+        /// </summary>
         public bool PrevState { get; set; }
 
         public NetStateReceiver()
@@ -40,9 +46,8 @@ namespace Ensure.AndroidApp.BroadcastReceivers
         }
 
         /// <summary>
-        /// Refreshes the current network state
+        /// Refreshes the properties that describe the current network state
         /// </summary>
-        /// <param name="context">The network context</param>
         public void RefreshState(Context context)
         {
             ConnectivityManager connMgr = context

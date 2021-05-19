@@ -16,6 +16,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
     [IntentFilter(new string[] { Intent.ActionBootCompleted })] // auto register to power event
     public class BootReceiver : BroadcastReceiver
     {
+        /// <inheritdoc/>
         public override void OnReceive(Context context, Intent intent)
         {
             LogHelper.Info( "Boot Completed and boot event fired!");
