@@ -76,7 +76,6 @@ namespace Ensure.Web.Services
 			}
 			catch (DbUpdateException)
             {
-				// TODO: Do Something?
 				throw;
             }
 			return addedEnsures;

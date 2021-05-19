@@ -112,7 +112,7 @@ namespace Ensure.Web.Controllers
             var res = await _appUsersService.SetUserTarget(dailyTarget, User.Identity.Name);
             if (!res.Succeeded)
             {
-                res.Errors.ForEach(e => ModelState.AddModelError("", e)); // tODO: show on client side!
+                res.Errors.ForEach(e => ModelState.AddModelError("", e));
             }
 
             if (returnHome)

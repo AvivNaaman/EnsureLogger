@@ -12,6 +12,7 @@ namespace Ensure.Web.Helpers
         /// <param name="input">The input string</param>
         public static DateTime? FastParseFormattedDate(this string input)
         {
+            if (input is null or "") return null;
             try
             {
                 var splitted = input.Split("-"); // split to 3 params
