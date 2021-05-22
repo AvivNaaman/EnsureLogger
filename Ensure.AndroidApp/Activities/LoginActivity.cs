@@ -51,7 +51,7 @@ namespace Ensure.AndroidApp
         /// </summary>
         private void ResetBtn_Click(object sender, EventArgs e)
         {
-            Dialog d = new Dialog(this);
+            Dialog d = new(this);
             d.SetContentView(Resource.Layout.dialog_pwd_reset);
             d.SetCancelable(true);
             d.SetTitle("Reset Password");

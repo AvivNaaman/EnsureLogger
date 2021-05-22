@@ -16,13 +16,14 @@ using Ensure.AndroidApp.Data;
 using Ensure.AndroidApp.BroadcastReceivers;
 using System.Security.Authentication;
 using Ensure.AndroidApp.Services;
+using Android.Net;
 
 namespace Ensure.AndroidApp
 {
     [Activity(Label = "@string/MainLabel", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, ILoadingStatedActivity
     {
-        private List<InternalEnsureLog> ensures = new List<InternalEnsureLog>();
+        private readonly List<InternalEnsureLog> ensures = new();
 
         #region WidgetRefernces
         // shell UI (swipe refresh & progress bar)
@@ -105,6 +106,13 @@ namespace Ensure.AndroidApp
                 StartLoginActivity();
                 return;
             }
+            else
+            {
+                // if user just started the app - make sure there are alarms for notification checks
+                var ns = new NotificationsService(this);
+                ns.CancelAllScheduled();
+                ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(1), true);
+            }
 
             // update logs & target & progress - force use of cache for nice start (won't block for long, I hope)
             var l = await ensureRepo.GetLogs(DateTime.MinValue, true);
@@ -113,7 +121,7 @@ namespace Ensure.AndroidApp
 
             // register network broadcast receiver
             netStateReceiver = new NetStateReceiver();
-            IntentFilter netFilter = new IntentFilter(Android.Net.ConnectivityManager.ConnectivityAction);
+            IntentFilter netFilter = new(ConnectivityManager.ConnectivityAction);
             netStateReceiver.NetworkStateChanged += NetworkStateChanged;
             RegisterReceiver(netStateReceiver, netFilter);
 
@@ -139,7 +147,7 @@ namespace Ensure.AndroidApp
         /// </summary>
         private void ProfileBtn_Click(object sender, EventArgs e)
         {
-            Intent i = new Intent(this, typeof(ProfileActivity));
+            Intent i = new(this, typeof(ProfileActivity));
             StartActivity(i);
         }
 
@@ -148,7 +156,7 @@ namespace Ensure.AndroidApp
         /// </summary>
         private void HistoryBtn_Click(object sender, EventArgs e)
         {
-            Intent i = new Intent(this, typeof(HistoryActivity));
+            Intent i = new(this, typeof(HistoryActivity));
             StartActivity(i);
         }
 
@@ -261,7 +269,7 @@ namespace Ensure.AndroidApp
         {
             topLoadingProgress.Indeterminate = isLoading;
             mainLayout.Enabled = addBtn.Enabled = !isLoading;
-            logoutMenuItem.SetEnabled(!isLoading);
+            logoutMenuItem?.SetEnabled(!isLoading);
         }
 
 
