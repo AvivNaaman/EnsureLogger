@@ -50,7 +50,7 @@ namespace Ensure.AndroidApp.Services
                     SaveUserInfoToSp();
 
                     var ns = new NotificationsService(context);
-                    ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(10));
+                    ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(1), true);
                 }
                 return res;
             }

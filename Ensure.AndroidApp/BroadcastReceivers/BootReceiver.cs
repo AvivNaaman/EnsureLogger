@@ -19,10 +19,10 @@ namespace Ensure.AndroidApp.BroadcastReceivers
         /// <inheritdoc/>
         public override void OnReceive(Context context, Intent intent)
         {
-            LogHelper.Info( "Boot Completed and boot event fired!");
-            // schedule next notification
+            LogHelper.Info("Boot Completed and boot event fired!");
+            // schedule next notification soon but not too soon
             NotificationsService ns = new(context);
-            ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(1));
+            ns.ScheduleEnsureCheckNotification(DateTime.Now.AddMinutes(1), true);
         }
     }
 }

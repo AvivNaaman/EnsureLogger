@@ -35,13 +35,15 @@ namespace Ensure.AndroidApp.Services
         /// Schedules a check for the current drinking status
         /// </summary>
         /// <param name="schedule">The next date to check on</param>
-        public void ScheduleEnsureCheckNotification(DateTime schedule)
+        public void ScheduleEnsureCheckNotification(DateTime schedule, bool withoutNotification)
         {
             var alarm = context.GetSystemService<AlarmManager>(Context.AlarmService);
             long scheduleAsMillisecs = (long)schedule.ToUniversalTime().Subtract(
                 new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
 
             var intent = new Intent(context, typeof(EnsureNotificationReceiver));
+            intent.PutExtra("withoutNotification", withoutNotification);
+
             var pIntent = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.OneShot);
 
             // fire scheduling
@@ -56,15 +58,20 @@ namespace Ensure.AndroidApp.Services
             var alarm = context.GetSystemService<AlarmManager>(Context.AlarmService);
 
             var intent = new Intent(context, typeof(EnsureNotificationReceiver));
-            var pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.OneShot);
 
+            intent.PutExtra("withoutNotification", true);
+            var pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.OneShot);
+            alarm.Cancel(pi);
+
+            intent.PutExtra("withoutNotification", false);
+            pi = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.OneShot);
             alarm.Cancel(pi);
         }
 
         /// <summary>
         /// Handles the notification receiver broadcasts
         /// </summary>
-        public async Task HandleNotificationBroadcastAsync()
+        public async Task HandleNotificationBroadcastAsync(Intent intent)
         {
             // Stage 1: update information from server
             var ensureRepository = new EnsureRepository(context);
@@ -82,15 +89,19 @@ namespace Ensure.AndroidApp.Services
             }
             LogHelper.Info($"Notification Service Got info from server: {progress}/{userInfo.DailyTarget}");
 
-            // Stage 2: Notify user to drink if should (Target > Progress)
-            if (userInfo.DailyTarget > progress)
+            if (!context.IsAppForeground() && !intent.GetBooleanExtra("withoutNotification", false)) 
+                // only if user is NOT using the app, and there was no request (int the intent) to prevent showing notifications
             {
-                NotifyEnsure(progress, userInfo);
+                // Stage 2: Notify user to drink if should (Target > Progress)
+                if (userInfo.DailyTarget > progress)
+                {
+                    NotifyEnsure(progress, userInfo);
+                }
             }
 
             // Stage 3: schedule next check
             DateTime nextNotificationSchedule = GetNextSchedule(progress, userInfo);
-            ScheduleEnsureCheckNotification(nextNotificationSchedule);
+            ScheduleEnsureCheckNotification(nextNotificationSchedule, false);
         }
 
         /// <summary>
@@ -107,7 +118,7 @@ namespace Ensure.AndroidApp.Services
             const int EndTime = 21;
 
             int drinksLeft = userInfo.DailyTarget - progress;
-            var timeUntilEnd = DateTime.Today.AddHours(EndTime) - DateTime.Now ;
+            var timeUntilEnd = DateTime.Today.AddHours(EndTime) - DateTime.Now;
 
             if (drinksLeft > 0 && // if the user should drink more today
                DateTime.Now.Hour >= StartTime &&

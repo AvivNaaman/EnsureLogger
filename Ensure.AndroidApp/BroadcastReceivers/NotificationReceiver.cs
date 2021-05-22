@@ -20,7 +20,7 @@ namespace Ensure.AndroidApp.BroadcastReceivers
             try
             {
                 var notificationService = new NotificationsService(context);
-                await notificationService.HandleNotificationBroadcastAsync();
+                await notificationService.HandleNotificationBroadcastAsync(intent);
             }
             catch (Exception e)
             {
