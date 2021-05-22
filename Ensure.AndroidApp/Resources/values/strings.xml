@@ -12,7 +12,7 @@
 	<string name="ProgressInnerTvText">0/0</string>
 	<string name="MainTitleTvText">Today\'s Progress</string>
 	<!-- Login -->
-  <string name="HistoryLabel">Loginy</string>
+  <string name="LoginLabel">Login</string>
 	<string name="LoginUserNameHint">User Name</string>
 	<string name="LoginPwdHint">Password</string>
 	<string name="LoginBtnText">Log in</string>
